@@ -1,6 +1,6 @@
 # Stay Valid — Project Documentation
 
-> **Status Compass for F-1 international students.**
+> **Stay Valid for F-1 international students.**
 > Turn immigration policy into dated timelines, attention-based checkpoints, and a printable DSO meeting kit.
 >
 > Built for the **Stellic Pathfinders Challenge**.
