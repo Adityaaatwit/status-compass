@@ -29,8 +29,17 @@ function asAttention(value: unknown): Attention {
   return ATTENTION_VALUES.includes(value as Attention) ? (value as Attention) : "information";
 }
 
+/** Removes research citation markers such as [page:1][web:18] from display text. */
+export function stripCitationMarkers(value: string): string {
+  return value.replace(/\s*\[(?:page|web|source):[^\]]*\]/gi, "").trim();
+}
+
 function strArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+  return Array.isArray(value)
+    ? value
+        .filter((v): v is string => typeof v === "string")
+        .map(stripCitationMarkers)
+    : [];
 }
 
 function adaptSource(raw: Record<string, unknown>): SourceRecord {
