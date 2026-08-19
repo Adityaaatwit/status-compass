@@ -1,0 +1,82 @@
+{
+  "researchedAsOf": "2026-08-19T23:59:59-04:00",
+  "updates": [
+    {
+      "id": "update-litigation-presidents-alliance",
+      "headline": "Federal lawsuit filed to enjoin implementation of the D/S elimination rule",
+      "discoveredAt": "2026-08-19T15:40:00-04:00",
+      "eventDate": "2026-08-18",
+      "topic": "litigation",
+      "summary": "A coalition of university organizations and unions filed a complaint and motion for preliminary injunction in the U.S. District Court in Massachusetts, seeking to block DHS’s final rule ending duration of status and imposing fixed admission periods for F, J, and I nonimmigrants before its scheduled September 15, 2026 effective date.[web:94][web:98]",
+      "whyItMatters": "If the court issues a temporary restraining order or preliminary injunction, the rule’s effective date could be delayed or its implementation partially or fully blocked; Status Compass must not assume the rule becomes effective on schedule without verifying court orders.",
+      "sourceIds": ["court-presidents-alliance-complaint", "pie-news-lawsuit"],
+      "affectedRuleIds": [
+        "rule-f1-sept15-status-monitor",
+        "rule-f1-transition-existing-ds-student",
+        "rule-f1-fixed-admission-after-effective-date",
+        "rule-f1-travel-readmission-fixed-period",
+        "rule-f1-unlawful-presence-fixed-aud"
+      ],
+      "primaryAuthorityLocated": true,
+      "verificationStatus": "needs_review",
+      "conflictingInformation": [],
+      "nextVerificationSteps": [
+        "Check the federal court docket for case 1:26-cv-13799 for any TRO, preliminary injunction, or order affecting the rule’s implementation.",
+        "Verify any DHS or DOJ statements responding to the litigation.",
+        "Update ruleSetStatus and legalStatus values if the court orders delay, stay, or injunction."
+      ],
+      "mustNotActivateRules": true
+    },
+    {
+      "id": "update-cra-major-rule-review",
+      "headline": "Rule classified as a major rule subject to Congressional Review Act processes",
+      "discoveredAt": "2026-08-19T15:20:00-04:00",
+      "eventDate": "2026-07-17",
+      "topic": "congressional_review",
+      "summary": "The Federal Register DATES section states that the duration-of-status elimination rule is a major rule subject to congressional review under the CRA and that DHS will publish a document to establish the actual effective date or terminate the rule if congressional review changes the scheduled September 15, 2026 effective date.[page:1][web:18][web:82]",
+      "whyItMatters": "Congress may pass a joint resolution of disapproval that prevents the rule from taking effect or retroactively nullifies it; Status Compass must monitor CRA trackers and congressional actions and avoid activating fixed-admission logic until it is clear that no disapproval has taken effect.",
+      "sourceIds": ["fr-2026-14439"],
+      "affectedRuleIds": [
+        "rule-f1-sept15-status-monitor",
+        "rule-f1-transition-existing-ds-student",
+        "rule-f1-fixed-admission-after-effective-date",
+        "rule-f1-unlawful-presence-fixed-aud"
+      ],
+      "primaryAuthorityLocated": true,
+      "verificationStatus": "verified_no_rule_change",
+      "conflictingInformation": [],
+      "nextVerificationSteps": [
+        "Monitor Congressional Review Act trackers and congress.gov for any resolution of disapproval targeting DHS RIN 1653-AA95 or document 2026-14439.",
+        "Check the Federal Register for any subsequent notice altering the effective date or terminating the rule.",
+        "Update rules.json legalStatus values if CRA disapproval is enacted."
+      ],
+      "mustNotActivateRules": true
+    },
+    {
+      "id": "update-implementation-sevp-faqs",
+      "headline": "Additional SEVP and Study in the States guidance expected on transition, EOS, and edge cases",
+      "discoveredAt": "2026-08-19T15:33:00-04:00",
+      "eventDate": null,
+      "topic": "agency_guidance",
+      "summary": "DHS and SEVP have published high-level descriptions of the fixed-admission rule and transition provisions, but detailed FAQs and implementation instructions for complex scenarios (e.g., overlapping programs, cap-gap periods under the new system, EOS processing expectations, and specific travel/OPT interactions) are still emerging and may not be complete as of the research date.[web:53][web:52][web:56]",
+      "whyItMatters": "Status Compass must avoid encoding assumptions about EOS processing times, cap-gap behavior, or detailed transition mechanics beyond what is clearly stated in primary sources; new guidance could refine or clarify how dates and deadlines should be calculated.",
+      "sourceIds": ["studyinthestates-final-rule-f1", "ice-sevp-governing-regs"],
+      "affectedRuleIds": [
+        "rule-f1-transition-existing-ds-student",
+        "rule-f1-fixed-admission-after-effective-date",
+        "rule-f1-opt-filing-window",
+        "rule-f1-travel-readmission-fixed-period",
+        "rule-f1-unlawful-presence-fixed-aud"
+      ],
+      "primaryAuthorityLocated": false,
+      "verificationStatus": "needs_review",
+      "conflictingInformation": [],
+      "nextVerificationSteps": [
+        "Monitor Study in the States and ICE SEVP sites for updated FAQs and implementation guidance specifically addressing F-1 transition mechanics and EOS procedures.",
+        "Compare university guidance against updated DHS materials to identify any conflicts or corrections.",
+        "Revise rules.json formulas and explanations once authoritative, detailed guidance is available."
+      ],
+      "mustNotActivateRules": true
+    }
+  ]
+}

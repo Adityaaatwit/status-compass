@@ -1,0 +1,875 @@
+{
+  "corpusVersion": "1.0.0-research",
+  "researchedAsOf": "2026-08-19T23:59:59-04:00",
+  "ruleSetStatus": "research_draft_requires_human_review",
+  "rules": [
+    {
+      "id": "rule-f1-sept15-status-monitor",
+      "title": "Sept. 15 fixed-period rule is not yet effective",
+      "topic": "transition",
+      "classifications": ["F-1"],
+      "legalStatus": "published_pending_effective",
+      "activeFrom": null,
+      "activeUntil": null,
+      "doNotActivateBefore": "2026-09-15",
+      "appliesWhen": {
+        "all": [],
+        "any": [],
+        "not": []
+      },
+      "requiredInputs": [],
+      "calculation": {
+        "type": "none",
+        "formula": null,
+        "dayCounting": null,
+        "weekendHolidayTreatment": null,
+        "basis": "Federal Register DATES section classifies the rule as a major rule subject to congressional review and sets a scheduled effective date of September 15, 2026, with a promise to publish any change or termination.[page:1][web:18]",
+        "isLegalDeadline": false
+      },
+      "finding": {
+        "attention": "monitor",
+        "headline": "DHS fixed-admission rule is finalized but pending effective date and further review",
+        "explanation": "DHS has published a final rule ending F-1 admission for duration of status and replacing it with fixed admission periods and an extension-of-stay process, but the rule does not take legal effect until at least September 15, 2026 and may be altered by congressional review or litigation.[page:1][web:18][web:101]",
+        "whyThisAppears": "Status Compass surfaces this finding to explain why any logic tied to fixed Admit Until Dates must be treated as pending until the scheduled effective date passes and no delaying action has occurred.[page:1][web:18]",
+        "officialRationale": "DHS states that fixed admission periods and required extension-of-stay filings will provide more opportunities to verify that F-1 students are maintaining status, reduce unlawful overstays, and deter fraud and abuse.[page:1][web:18]",
+        "studentImpact": "Students currently admitted under duration of status continue to be governed by existing D/S rules until the new regulation actually becomes effective; however, they should monitor developments because their future admissions or extensions may be subject to fixed-date rules.[page:1][web:18][web:61]",
+        "knownFacts": [
+          "The final rule eliminating D/S and establishing fixed admission periods was published in the Federal Register on July 17, 2026 at 91 FR 44976.[page:1][web:18]",
+          "The rule is classified as a major rule subject to congressional review with a scheduled effective date of September 15, 2026.[page:1][web:18]",
+          "As of August 19, 2026, no Federal Register notice has been identified that changes the effective date or terminates the rule.[page:1][web:18][web:30]"
+        ],
+        "confirmationNeeded": [
+          "Whether Congress has taken any CRA disapproval action affecting this rule after the research date.[web:82][web:84]",
+          "Whether any court has issued a TRO, preliminary injunction, or stay affecting the rule’s implementation.[web:94][web:98]"
+        ],
+        "actions": [
+          "Monitor DHS, ICE, SEVP, USCIS, and Federal Register announcements about the rule’s effective date and any delays or terminations.[page:1][web:18][web:52]",
+          "Treat any fixed-period admission calculations as informational until a human reviewer confirms that the rule is fully effective and not stayed or enjoined.[page:1][web:18]"
+        ],
+        "questionsForDso": [
+          "Has our school received updated guidance from SEVP or DHS about the effective date and implementation of the fixed-admission rule?",
+          "Is the school advising students to make any immediate changes before September 15, 2026 based on this rule, or to wait for further confirmation?"
+        ],
+        "documentsOrDatesToBring": [
+          "The student’s latest I-20 showing current program dates.",
+          "Any school communications about the duration-of-status rule change."
+        ]
+      },
+      "possiblePathways": [
+        {
+          "id": "pathway-monitor-litigation",
+          "title": "Monitor litigation challenging the rule",
+          "whyItMayBeRelevant": "A pending federal lawsuit seeks to enjoin implementation of the rule; if granted, it could delay or block the transition to fixed admission periods for F-1 students.[web:94][web:98]",
+          "eligibilityNotDetermined": true,
+          "confirmationNeeded": [
+            "Whether the court has issued any order affecting the rule’s effective date."
+          ],
+          "questionsForDso": [
+            "Is the institution tracking the Presidents Alliance v. DHS case or other litigation, and how will it adjust advising if the court issues an injunction?"
+          ]
+        }
+      ],
+      "sourceIds": ["fr-2026-14439", "nafsa-trump-vance-update"],
+      "minimalSupportingExcerpt": "The effective date is September 15, 2026. However, at the conclusion of the congressional review, if the effective date has been changed, DHS will publish a document in the Federal Register to establish the actual effective date or to terminate the rule.[page:1][web:18]",
+      "boundaryTests": [
+        {
+          "description": "Before effective date (rule should be treated as pending)",
+          "inputs": {},
+          "asOfDate": "2026-08-19",
+          "expectedOutcome": "RuleSet flagged as published_pending_effective; no fixed-admission logic activated; attention=monitor."
+        },
+        {
+          "description": "On scheduled effective date with no CRA action recorded",
+          "inputs": {},
+          "asOfDate": "2026-09-15",
+          "expectedOutcome": "Human review required to confirm activation; doNotActivateBefore condition satisfied but litigation and guidance must still be checked."
+        },
+        {
+          "description": "After effective date with recorded CRA disapproval",
+          "inputs": {},
+          "asOfDate": "2026-10-01",
+          "expectedOutcome": "Status Compass must not activate rules dependent on the final rule; rule-set status must be revisited and likely set to terminated or superseded."
+        }
+      ],
+      "uncertainty": "It is unknown whether Congress will act under the CRA or whether courts will issue orders that delay or block the rule; these uncertainties must be resolved by human review before treating the fixed-admission system as fully active.",
+      "humanReviewRequired": true
+    },
+    {
+      "id": "rule-f1-ds-definition-current",
+      "title": "What Duration of Status (D/S) means under current F-1 rules",
+      "topic": "admission",
+      "classifications": ["F-1"],
+      "legalStatus": "effective",
+      "activeFrom": null,
+      "activeUntil": null,
+      "doNotActivateBefore": null,
+      "appliesWhen": {
+        "all": [
+          "studentClassificationIsF1",
+          "i94NotationIsDS"
+        ],
+        "any": [],
+        "not": []
+      },
+      "requiredInputs": [
+        "i94Notation",
+        "i20ProgramEndDate",
+        "optOrStemOptStatus"
+      ],
+      "calculation": {
+        "type": "none",
+        "formula": "If the I-94 shows D/S, the student’s authorized stay is defined by 8 CFR 214.2(f) as the period during which the student pursues a full course of study at an SEVP-certified school or engages in authorized practical training following completion, plus authorized grace periods; there is no independent fixed admission expiration date to calculate.[web:65][web:63]",
+        "dayCounting": "Grace periods (e.g., 60-day post-completion period) are counted in calendar days from the program or OPT completion date, inclusive of weekends and holidays, unless specified otherwise.[web:65]",
+        "weekendHolidayTreatment": "No special extension for weekends or federal holidays is provided in the regulation; deadlines fall on the stated calendar dates.[web:65]",
+        "basis": "8 CFR 214.2(f) defines D/S for F-1 students; USCIS policy manual and unlawful-presence guidance describe how D/S interacts with authorized stay and unlawful presence.[web:65][web:63][web:61]",
+        "isLegalDeadline": false
+      },
+      "finding": {
+        "attention": "information",
+        "headline": "Under D/S, authorized F-1 stay is tied to maintaining status rather than to a specific I-94 date",
+        "explanation": "When an F-1 student’s I-94 is annotated D/S, the student’s authorized stay is defined by maintaining full-time study or authorized practical training and remaining within program and employment dates, plus grace periods, instead of by a fixed admit-until date.[web:65][web:63][web:61]",
+        "whyThisAppears": "Status Compass needs to distinguish D/S admissions from fixed-date admissions because transition rules and unlawful-presence calculations differ between these frameworks.[web:65][web:61]",
+        "officialRationale": "Legacy INS and DHS adopted D/S to streamline processing of student admissions and extensions when the number of students was lower and to reduce workload, but DHS now asserts that D/S impedes monitoring and enforcement.[page:1][web:18][web:9]",
+        "studentImpact": "A student with D/S must focus on maintaining full-time enrollment, obeying F-1 rules, and tracking program and OPT/STEM OPT dates, but does not have a separate admission expiration date to track on the I-94; unlawful presence generally does not start solely because a specific calendar date passes, unless a formal status violation is found.[web:65][web:61]",
+        "knownFacts": [
+          "D/S for F-1 is defined as the time pursuing a full course of study or authorized practical training, plus authorized time to depart.[web:65]",
+          "F-1 students admitted for D/S do not need to file extension-of-stay applications solely to remain in status while maintaining normal progress.[web:65][web:67]",
+          "Unlawful presence for D/S admissions typically starts only after status ends and the individual remains in the United States.[web:61]"
+        ],
+        "confirmationNeeded": [
+          "Whether the student’s current SEVIS record reflects full-time enrollment or authorized OPT/STEM OPT.",
+          "Whether any prior USCIS or CBP action has found a status violation."
+        ],
+        "actions": [
+          "Encourage the student to verify that their I-94 shows D/S and to confirm program end dates and any authorized OPT/STEM OPT periods.",
+          "Direct the student to review existing F-1 maintenance-of-status rules and consult a DSO if unsure about their current status."
+        ],
+        "questionsForDso": [
+          "Can you confirm that my SEVIS record shows me in status and making normal progress under the current D/S framework?",
+          "Do any school or agency records suggest a status violation that could affect how my authorized stay is interpreted?"
+        ],
+        "documentsOrDatesToBring": [
+          "Most recent I-94 printout showing D/S.",
+          "Current Form I-20 with program start and end dates.",
+          "Any OPT/STEM OPT EAD cards and SEVIS employment records if applicable."
+        ]
+      },
+      "possiblePathways": [
+        {
+          "id": "pathway-ds-transition",
+          "title": "Discuss how D/S will transition under the new rule",
+          "whyItMayBeRelevant": "Students admitted under D/S who are in status on the effective date will move into a transition period defined by program end dates, EAD end dates, and overall four-year caps.[page:1][web:18][web:53][web:60]",
+          "eligibilityNotDetermined": true,
+          "confirmationNeeded": [
+            "Whether the student will be in the United States and maintaining status on September 15, 2026."
+          ],
+          "questionsForDso": [
+            "If my I-94 shows D/S now, how will your office calculate my transition Admit Until Date when the rule takes effect?"
+          ]
+        }
+      ],
+      "sourceIds": ["ecfr-8cfr-214-2f", "uscis-unlawful-presence"],
+      "minimalSupportingExcerpt": "Duration of status is defined as the time during which an F-1 student is pursuing a full course of study at an educational institution certified by SEVP ... or engaging in authorized practical training following completion of studies ... An F-1 student who is admitted for duration of status is not required to apply for extension of stay as long as the student is maintaining status.[web:65][web:67]",
+      "boundaryTests": [
+        {
+          "description": "Student with D/S and in-status program",
+          "inputs": {
+            "i94Notation": "D/S",
+            "i20ProgramEndDate": "2027-05-15",
+            "optOrStemOptStatus": "none"
+          },
+          "asOfDate": "2026-08-19",
+          "expectedOutcome": "Finding explains that authorized stay is tied to maintaining full-time study through 2027-05-15 plus grace period; no fixed admission date calculated."
+        },
+        {
+          "description": "Student with D/S and approved post-completion OPT",
+          "inputs": {
+            "i94Notation": "D/S",
+            "i20ProgramEndDate": "2026-05-15",
+            "optOrStemOptStatus": "post_completion_opt"
+          },
+          "asOfDate": "2026-08-19",
+          "expectedOutcome": "Finding explains that authorized stay continues through OPT EAD end date plus 60-day grace period under current rules."
+        },
+        {
+          "description": "Student with D/S whose SEVIS record is terminated",
+          "inputs": {
+            "i94Notation": "D/S",
+            "i20ProgramEndDate": "2027-05-15",
+            "optOrStemOptStatus": "none"
+          },
+          "asOfDate": "2026-08-19",
+          "expectedOutcome": "Rule flags the need for DSO or attorney review; Status Compass does not determine status outcomes or unlawful-presence start date."
+        }
+      ],
+      "uncertainty": "The application cannot determine whether a student is maintaining status, whether SEVIS has been updated correctly, or whether any agency has found a violation; those determinations require institutional and legal review.",
+      "humanReviewRequired": true
+    },
+    {
+      "id": "rule-f1-transition-existing-ds-student",
+      "title": "Transition period for F-1 students in D/S on Sept. 15, 2026",
+      "topic": "transition",
+      "classifications": ["F-1"],
+      "legalStatus": "published_pending_effective",
+      "activeFrom": "2026-09-15",
+      "activeUntil": null,
+      "doNotActivateBefore": "2026-09-15",
+      "appliesWhen": {
+        "all": [
+          "studentClassificationIsF1",
+          "i94NotationIsDS",
+          "presentInUSOnEffectiveDate",
+          "maintainingF1StatusOnEffectiveDate"
+        ],
+        "any": [],
+        "not": []
+      },
+      "requiredInputs": [
+        "i94Notation",
+        "i20ProgramEndDateOnEffectiveDate",
+        "optOrStemOptEadEndDateOnEffectiveDate"
+      ],
+      "calculation": {
+        "type": "source_defined",
+        "formula": "Transition Authorized Stay End = min( max( i20ProgramEndDateOnEffectiveDate, optOrStemOptEadEndDateOnEffectiveDate ), 2030-11-14 ). Under DHS and Study in the States guidance, F-1 students admitted for D/S and properly maintaining status on September 15, 2026 may remain until the later of (1) the program end date on the Form I-20 valid on that date or (2) the expiration date of a valid post-completion OPT/STEM OPT EAD, capped at four years after the effective date plus the legacy 60-day grace period, currently described as November 14, 2030.[page:1][web:18][web:53][web:55]",
+        "dayCounting": "Program and EAD end dates are calendar dates; the 60-day grace period is counted in calendar days following the end date, without specific weekend or holiday adjustments.[web:55]",
+        "weekendHolidayTreatment": "No regulation indicates weekend or holiday extensions; students should assume deadlines fall on the stated calendar date.",
+        "basis": "Federal Register regulatory text and DHS Study in the States guidance describing transition rules for F students in D/S; multiple university summaries corroborate the November 14, 2030 cap and 60-day grace period.[page:1][web:18][web:53][web:55][web:50]",
+        "isLegalDeadline": true
+      },
+      "finding": {
+        "attention": "prepare",
+        "headline": "If you are in F-1 D/S on Sept. 15, 2026, you will enter a capped transition period tied to your I-20 and any OPT/STEM OPT",
+        "explanation": "For F-1 students who are physically present in the United States, admitted for D/S, and properly maintaining status on September 15, 2026, DHS transition rules allow continued F-1 stay until the later of the I-20 program end date or OPT/STEM OPT EAD end date valid on that date, but not beyond November 14, 2030; after that, a timely EOS or departure/reentry will generally be necessary to remain in F-1 status.[page:1][web:18][web:53][web:55]",
+        "whyThisAppears": "Status Compass uses this rule to flag a transition horizon for existing D/S students and to prompt discussions with DSOs about program extensions, OPT/STEM OPT planning, and EOS timing well before the cap date.[page:1][web:18][web:53]",
+        "officialRationale": "DHS states that the transition provisions are intended to minimize disruption for current students while still shifting the system away from open-ended D/S toward fixed admission periods and EOS oversight.[page:1][web:18]",
+        "studentImpact": "Current F-1 students with D/S will not immediately receive a fixed AUD on their I-94 at the effective date, but they will face a finite transition window; program changes, OPT/STEM OPT plans, and travel after September 15, 2026 may convert them to fixed-date admission sooner.[page:1][web:18][web:53][web:60]",
+        "knownFacts": [
+          "DHS and Study in the States describe a transition period for F students admitted for D/S before the effective date and in status on that date.[page:1][web:18][web:53]",
+          "University and association guidance consistently identify November 14, 2030 as the outer limit of the F-1 transition period for most students, reflecting four years after September 15, 2026 plus 60 days.[web:55][web:50][web:88]",
+          "Travel and readmission after the effective date may result in a new I-94 with a fixed AUD and the shorter 30-day grace period.[page:1][web:18][web:91]"
+        ],
+        "confirmationNeeded": [
+          "Whether the student will be in the United States and maintaining status on September 15, 2026.",
+          "The exact I-20 program end date and any OPT/STEM OPT EAD end date valid on September 15, 2026.",
+          "Whether any subsequent DHS or court action has changed the transition cap date."
+        ],
+        "actions": [
+          "Confirm current I-20 program end date and whether any OPT/STEM OPT will be valid on September 15, 2026.",
+          "Plan DSO conversations about program extensions or new programs well before any calculated transition end date.",
+          "Avoid assuming that the November 14, 2030 cap extends admission automatically; rely on DSO and, if needed, legal advice."
+        ],
+        "questionsForDso": [
+          "Based on my current I-20 and any OPT/STEM OPT plans, what transition end date would apply to me under the new rule?",
+          "How much earlier than that date should I plan to seek an extension of stay or prepare for departure or a change of level?",
+          "Will travel after September 15, 2026 change how my transition period is calculated?"
+        ],
+        "documentsOrDatesToBring": [
+          "I-94 showing D/S.",
+          "Form I-20 valid on September 15, 2026 with program dates.",
+          "Any OPT/STEM OPT EAD showing start and end dates."
+        ]
+      },
+      "possiblePathways": [
+        {
+          "id": "pathway-future-eos",
+          "title": "Discuss timing of future EOS filings before the transition cap",
+          "whyItMayBeRelevant": "Students who need to remain in the United States beyond the transition period will likely need to file EOS applications with USCIS or use travel and readmission to obtain new fixed admission periods.[page:1][web:18][web:26]",
+          "eligibilityNotDetermined": true,
+          "confirmationNeeded": [
+            "Projected program and training timelines through and beyond the transition horizon."
+          ],
+          "questionsForDso": [
+            "When should I start preparing an EOS application if my current program or OPT/STEM OPT extends close to the transition cap?"
+          ]
+        }
+      ],
+      "sourceIds": ["fr-2026-14439", "studyinthestates-final-rule-f1", "asu-ds-rule-faq", "uwisc-iss-ds-rule"],
+      "minimalSupportingExcerpt": "F students in the United States admitted with duration of status prior to Sept. 15, 2026, can remain in the United States until the Program End Date listed on their Form I-20 or the end of their post-completion OPT or STEM OPT extension, not to exceed Nov. 14, 2030 (four years, plus a 60-day departure period).[web:53][web:55]",
+      "boundaryTests": [
+        {
+          "description": "Program end date before OPT/STEM OPT end date, both before cap",
+          "inputs": {
+            "i94Notation": "D/S",
+            "i20ProgramEndDateOnEffectiveDate": "2028-05-15",
+            "optOrStemOptEadEndDateOnEffectiveDate": "2028-11-15"
+          },
+          "asOfDate": "2026-09-16",
+          "expectedOutcome": "Transition authorized stay end date derived as 2028-11-15 plus 60 days, since this is later than the program end but earlier than November 14, 2030."
+        },
+        {
+          "description": "Program and OPT/STEM OPT end after four-year cap",
+          "inputs": {
+            "i94Notation": "D/S",
+            "i20ProgramEndDateOnEffectiveDate": "2031-05-15",
+            "optOrStemOptEadEndDateOnEffectiveDate": "2031-11-15"
+          },
+          "asOfDate": "2026-09-16",
+          "expectedOutcome": "Transition authorized stay end date capped at 2030-11-14; student must plan EOS or departure/readmission before that date."
+        },
+        {
+          "description": "Program ends before cap and no OPT/STEM OPT is valid on effective date",
+          "inputs": {
+            "i94Notation": "D/S",
+            "i20ProgramEndDateOnEffectiveDate": "2027-05-15",
+            "optOrStemOptEadEndDateOnEffectiveDate": null
+          },
+          "asOfDate": "2026-09-16",
+          "expectedOutcome": "Transition authorized stay end date derived as 2027-05-15 plus 60 days; EOS or departure/readmission needed beyond that."
+        }
+      ],
+      "uncertainty": "Exact regulatory text for the transition cap and its interaction with multiple programs has not been fully parsed in this pass; Status Compass must not infer more generous authorization than DHS explicitly provides and must defer to DSOs and legal counsel.",
+      "humanReviewRequired": true
+    },
+    {
+      "id": "rule-f1-fixed-admission-after-effective-date",
+      "title": "Fixed admission period for F-1 students admitted on or after Sept. 15, 2026",
+      "topic": "admission",
+      "classifications": ["F-1"],
+      "legalStatus": "published_pending_effective",
+      "activeFrom": "2026-09-15",
+      "activeUntil": null,
+      "doNotActivateBefore": "2026-09-15",
+      "appliesWhen": {
+        "all": [
+          "studentClassificationIsF1",
+          "admissionDateOnOrAfterEffectiveDate",
+          "i94NotationIsDate"
+        ],
+        "any": [],
+        "not": []
+      },
+      "requiredInputs": [
+        "dateOfAdmission",
+        "i20ProgramStartDate",
+        "i20ProgramEndDate",
+        "optOrStemOptEadEndDate"
+      ],
+      "calculation": {
+        "type": "date_add",
+        "formula": "AdmitUntilDate (AUD) = min( i20ProgramEndDate, i20ProgramStartDate + 4 years, optOrStemOptEadEndDate ) + 30 days departure period, with a separate 30-day arrival period permitted before the start date that does not count against the four-year cap.[page:1][web:18][web:53][web:60]",
+        "dayCounting": "Four-year cap is measured from the program start date listed on the Form I-20; the 30-day arrival and 30-day departure periods are counted in calendar days and do not count toward the four-year maximum.[web:53][web:50]",
+        "weekendHolidayTreatment": "Regulations and guidance do not provide special treatment for weekends or holidays; the AUD and grace periods are calendar dates.",
+        "basis": "Federal Register regulatory summary, DHS Study in the States guidance, and university analyses describing that F-1 admission is granted up to the program end date or four years from the program start date, whichever is shorter, plus a 30-day departure period; post-completion OPT/STEM OPT may extend admission up to the EAD end date plus 30 days within the four-year cap.[page:1][web:18][web:53][web:34][web:50]",
+        "isLegalDeadline": true
+      },
+      "finding": {
+        "attention": "confirm_now",
+        "headline": "Newly admitted F-1 students will receive a fixed Admit Until Date tied to program length and four-year caps",
+        "explanation": "After the rule becomes effective, F-1 students admitted or granted F-1 status on or after September 15, 2026 will receive an I-94 with a specific AUD tied to their I-20 program length, capped at four years from the program start date, plus a 30-day departure period; students needing more time must file an EOS or depart and seek readmission.[page:1][web:18][web:53][web:34]",
+        "whyThisAppears": "Status Compass uses this rule to shift deadline calculations from the I-20 program end date alone to the I-94 AUD, prompting students to track and confirm the I-94 date as a controlling legal deadline for admission.[web:37][web:91]",
+        "officialRationale": "DHS states that fixed admission periods aligned with program length and EOS procedures will improve monitoring, ensure periodic review of continued eligibility, and better enforce unlawful-presence inadmissibility provisions.[page:1][web:18]",
+        "studentImpact": "Students admitted under the fixed system must track both their I-20 program end date and their I-94 AUD; exceeding the AUD without a timely EOS or other protective filing can lead to unlawful presence and future bars on admission.[web:37][web:61]",
+        "knownFacts": [
+          "DHS guidance states that F students admitted after the effective date will be admitted for a fixed period based on their Form I-20 program length, not to exceed four years, plus a 30-day departure period.[web:53][web:34][web:50]",
+          "Analyses explain that the four-year cap is calculated from the program start date in SEVIS, not from the physical date of entry.[web:50][web:88]",
+          "University and professional guidance consistently highlight that the I-94 AUD becomes the critical date for maintaining lawful admission under the fixed system.[web:37][web:91]"
+        ],
+        "confirmationNeeded": [
+          "The student’s actual I-94 AUD and any linked notes about OPT/STEM OPT.",
+          "Whether any USCIS EOS or change-of-status applications have been filed or approved that modify the admission period."
+        ],
+        "actions": [
+          "Instruct the student to retrieve their Form I-94 from i94.cbp.dhs.gov and record the AUD.",
+          "Encourage the student to compare their AUD to the I-20 program end date and any OPT/STEM OPT plans and discuss discrepancies with a DSO."
+        ],
+        "questionsForDso": [
+          "Can you help me interpret my I-94 Admit Until Date compared to my I-20 program end date under the new rule?",
+          "If my program or training is expected to exceed the current AUD, when should I start preparing an EOS application?"
+        ],
+        "documentsOrDatesToBring": [
+          "I-94 showing AUD.",
+          "Current Form I-20 showing program start and end dates.",
+          "Any OPT/STEM OPT EADs or plans if applicable."
+        ]
+      },
+      "possiblePathways": [
+        {
+          "id": "pathway-eos-after-fixed-admission",
+          "title": "Discuss extension-of-stay options if program will exceed AUD",
+          "whyItMayBeRelevant": "Students whose program, OPT, or STEM OPT will outlast their initial fixed admission period may need to file EOS applications with USCIS, including biometrics, or plan travel and readmission.[page:1][web:18][web:26][web:79]",
+          "eligibilityNotDetermined": true,
+          "confirmationNeeded": [
+            "Projected end dates for academic program and any practical training."
+          ],
+          "questionsForDso": [
+            "Given my projected completion and training timeline, would EOS or travel/reentry be the better approach to extend my F-1 admission?"
+          ]
+        }
+      ],
+      "sourceIds": ["fr-2026-14439", "studyinthestates-final-rule-f1", "uwisc-iss-ds-rule"],
+      "minimalSupportingExcerpt": "Beginning on Sept. 15, 2026, F students will be admitted for a fixed period of time instead of duration of status. This fixed period of time is based on the length of a student's program of study listed on their Form I-20, not to exceed four years, plus a 30-day period for arrival and an additional 30-day period for departure.[web:53]",
+      "boundaryTests": [
+        {
+          "description": "Program shorter than four years with no OPT",
+          "inputs": {
+            "dateOfAdmission": "2026-09-20",
+            "i20ProgramStartDate": "2026-09-01",
+            "i20ProgramEndDate": "2028-05-15",
+            "optOrStemOptEadEndDate": null
+          },
+          "asOfDate": "2026-09-21",
+          "expectedOutcome": "AUD calculated as 2028-05-15 plus 30 days; four-year cap not reached."
+        },
+        {
+          "description": "Program longer than four years",
+          "inputs": {
+            "dateOfAdmission": "2026-09-20",
+            "i20ProgramStartDate": "2026-09-01",
+            "i20ProgramEndDate": "2031-05-15",
+            "optOrStemOptEadEndDate": null
+          },
+          "asOfDate": "2026-09-21",
+          "expectedOutcome": "AUD calculated as 4 years from program start (2030-09-01) plus 30 days; student must plan EOS or travel/reentry for later program time."
+        },
+        {
+          "description": "Post-completion OPT within four-year window",
+          "inputs": {
+            "dateOfAdmission": "2026-09-20",
+            "i20ProgramStartDate": "2026-09-01",
+            "i20ProgramEndDate": "2027-05-15",
+            "optOrStemOptEadEndDate": "2028-05-15"
+          },
+          "asOfDate": "2028-05-16",
+          "expectedOutcome": "Admission period extended to OPT EAD end date plus 30 days, subject to four-year cap; EOS or departure needed beyond that."
+        }
+      ],
+      "uncertainty": "Exact regulatory text for how post-completion OPT and STEM OPT periods are integrated into the four-year cap has not been fully parsed; Status Compass must treat its formulas as approximations and prompt DSO review for complex timelines.",
+      "humanReviewRequired": true
+    },
+    {
+      "id": "rule-f1-program-end-ds-grace-period",
+      "title": "60-day grace period after program end under current D/S system",
+      "topic": "grace_period",
+      "classifications": ["F-1"],
+      "legalStatus": "effective",
+      "activeFrom": null,
+      "activeUntil": "2026-09-14",
+      "doNotActivateBefore": null,
+      "appliesWhen": {
+        "all": [
+          "studentClassificationIsF1",
+          "i94NotationIsDS",
+          "programCompleted",
+          "noPostCompletionOptOrStemOpt"
+        ],
+        "any": [],
+        "not": []
+      },
+      "requiredInputs": [
+        "i20ProgramEndDate"
+      ],
+      "calculation": {
+        "type": "date_add",
+        "formula": "official_deadline = i20ProgramEndDate + 60 days. Under current 8 CFR 214.2(f) and longstanding guidance, an F-1 student who completes a program of study without post-completion OPT generally has a 60-day grace period to depart the United States, apply for a new program or level, or otherwise seek to maintain or change status.[web:65][web:13]",
+        "dayCounting": "Calendar days counted from the next day after the program end date; the grace period includes weekends and federal holidays.",
+        "weekendHolidayTreatment": "No additional extension for weekends or holidays is provided; the 60th day is the last day of the grace period.",
+        "basis": "Existing F-1 regulations and guidance describing the 60-day grace period after program completion under D/S admission.[web:65][web:13]",
+        "isLegalDeadline": true
+      },
+      "finding": {
+        "attention": "prepare",
+        "headline": "Under current rules, most F-1 students without OPT have 60 days after program completion to take action",
+        "explanation": "Before the new rule becomes effective, F-1 students admitted for D/S who complete their academic program and do not pursue post-completion OPT typically have 60 calendar days after the I-20 program end date to depart, begin a new program, or take other lawful status-preserving steps.[web:65][web:13]",
+        "whyThisAppears": "Status Compass uses this rule to compute a clear, existing legal deadline tied to the I-20 program end date for students in Scenario B and to encourage early DSO conversations about next steps.",
+        "officialRationale": "The 60-day grace period was designed to allow reasonable time for departure or preparation of further lawful activity following completion, but DHS now views longer grace periods as potentially inconsistent with tighter oversight goals.[page:1][web:18][web:13]",
+        "studentImpact": "Students must be aware that remaining in the United States beyond 60 days after program completion without appropriate filings or new status can trigger status and unlawful-presence issues; the new rule may shorten this period for future fixed-admission cohorts.[web:65][web:61][web:50]",
+        "knownFacts": [
+          "Current F-1 regulations provide a 60-day grace period after program completion under D/S.[web:65][web:13]",
+          "DHS’s final rule shortens the post-completion grace period to 30 days for students admitted under the new fixed-period framework.[page:1][web:18][web:50]",
+          "Transition provisions generally preserve the 60-day grace period for F-1 students admitted for D/S and in status on the effective date until they convert to fixed admissions.[web:3][web:60]"
+        ],
+        "confirmationNeeded": [
+          "The exact I-20 program end date.",
+          "Whether the student has requested or been recommended for post-completion OPT."
+        ],
+        "actions": [
+          "Calculate the 60-day post-completion deadline based on the I-20 program end date.",
+          "Encourage the student to schedule a DSO meeting before the program end date or early in the grace period to discuss options."
+        ],
+        "questionsForDso": [
+          "Based on my program end date, what options do I have during my 60-day grace period under current rules?",
+          "How will this grace period change if I am later admitted under the fixed-period system?"
+        ],
+        "documentsOrDatesToBring": [
+          "Form I-20 showing program end date.",
+          "Any documentation of pending or planned OPT/STEM OPT applications."
+        ]
+      },
+      "possiblePathways": [
+        {
+          "id": "pathway-next-program-or-opt",
+          "title": "Discuss next steps: new program, OPT, or departure",
+          "whyItMayBeRelevant": "Students nearing program completion must decide whether to apply for OPT, start a new program, transfer, travel, or prepare to depart within the grace period.",
+          "eligibilityNotDetermined": true,
+          "confirmationNeeded": [
+            "Student’s academic and career goals post-completion."
+          ],
+          "questionsForDso": [
+            "Given my goals, should I consider OPT, a new program, or departure during my grace period, and what deadlines apply to each option?"
+          ]
+        }
+      ],
+      "sourceIds": ["ecfr-8cfr-214-2f", "nafsa-duration-status-explainer"],
+      "minimalSupportingExcerpt": "Under current regulations, nonimmigrants admitted to the United States in F status are admitted for duration of status and generally have a 60-day grace period following completion of their course of study or authorized practical training to depart or take other lawful action.[web:65][web:13]",
+      "boundaryTests": [
+        {
+          "description": "Program ends and student has no OPT",
+          "inputs": {
+            "i20ProgramEndDate": "2027-05-15"
+          },
+          "asOfDate": "2027-05-16",
+          "expectedOutcome": "Legal deadline for grace period ends on 2027-07-14; Status Compass may set a preparation reminder earlier but must distinguish reminder from deadline."
+        },
+        {
+          "description": "Student plans DSO meeting before grace period",
+          "inputs": {
+            "i20ProgramEndDate": "2027-05-15"
+          },
+          "asOfDate": "2027-04-15",
+          "expectedOutcome": "Rule identifies upcoming program end and 60-day grace; attention=prepare; no unlawful-presence implication."
+        },
+        {
+          "description": "Student after grace period with no filings",
+          "inputs": {
+            "i20ProgramEndDate": "2027-05-15"
+          },
+          "asOfDate": "2027-08-01",
+          "expectedOutcome": "Rule flags that legal deadline has passed and directs the student to consult a DSO or attorney; Status Compass does not determine status or unlawful-presence consequences."
+        }
+      ],
+      "uncertainty": "The application cannot determine whether any post-completion OPT applications were filed or approved, nor whether DHS has made any status findings; all such determinations require human review.",
+      "humanReviewRequired": true
+    },
+    {
+      "id": "rule-f1-opt-filing-window",
+      "title": "Core filing window for post-completion OPT under current rules",
+      "topic": "opt",
+      "classifications": ["F-1"],
+      "legalStatus": "effective",
+      "activeFrom": null,
+      "activeUntil": null,
+      "doNotActivateBefore": null,
+      "appliesWhen": {
+        "all": [
+          "studentClassificationIsF1",
+          "planningPostCompletionOpt"
+        ],
+        "any": [],
+        "not": []
+      },
+      "requiredInputs": [
+        "i20ProgramEndDate",
+        "dsoOptRecommendationDate"
+      ],
+      "calculation": {
+        "type": "none",
+        "formula": "official_deadline = USCIS must receive Form I-765 for post-completion OPT after the DSO recommendation, no later than 60 days after the DSO enters the recommendation in SEVIS and no later than the end of the 60-day grace period after program completion; the earliest filing is up to 90 days before program completion, as long as the student has completed one full academic year.[web:71][web:73]",
+        "dayCounting": "Calendar days; 90-day earliest window counted back from program end date; 60-day window counted forward from DSO recommendation date and program end date.[web:71][web:73]",
+        "weekendHolidayTreatment": "No specific weekend or holiday adjustments stated; deadlines follow calendar dates.",
+        "basis": "USCIS OPT guidance and Form I-765 instructions specifying earliest and latest filing windows relative to program end and DSO recommendation dates.[web:71][web:73]",
+        "isLegalDeadline": true
+      },
+      "finding": {
+        "attention": "prepare",
+        "headline": "Post-completion OPT has a defined filing window tied to program end and DSO recommendation dates",
+        "explanation": "To request post-completion OPT, an F-1 student must obtain a DSO recommendation in SEVIS and file Form I-765 with USCIS no earlier than 90 days before program completion and no later than 60 days after the DSO recommendation and within the 60-day post-completion grace period.[web:71][web:73]",
+        "whyThisAppears": "Status Compass uses this rule to compute a clear legal window for OPT applications and to prompt early planning conversations before the program end date, especially under Scenario C.",
+        "officialRationale": "USCIS states that these windows ensure orderly adjudication and that employment does not begin before a student has completed at least one academic year and properly requested authorization.[web:71]",
+        "studentImpact": "Missing the OPT filing window can prevent a student from obtaining post-completion OPT; the new fixed-admission rule adds an additional EOS consideration for students admitted under fixed periods.[page:1][web:18][web:79]",
+        "knownFacts": [
+          "DSO recommendation must precede Form I-765 filing for OPT.[web:71]",
+          "Form I-765 for post-completion OPT must be filed within 60 days of the DSO recommendation and within the post-completion grace period.[web:71][web:73]",
+          "Under the new rule, F-1 students admitted under fixed periods may also need to consider EOS timing to maintain admission during OPT.[page:1][web:18][web:79]"
+        ],
+        "confirmationNeeded": [
+          "Exact program end date.",
+          "Date the DSO enters the OPT recommendation in SEVIS.",
+          "Whether any prior OPT filings have been made."
+        ],
+        "actions": [
+          "Calculate earliest and latest suggested filing dates for Form I-765 based on program end and DSO recommendation dates.",
+          "Encourage the student to meet with the DSO before the earliest filing date to discuss OPT eligibility and timing."
+        ],
+        "questionsForDso": [
+          "When do you recommend that I request my OPT recommendation and file Form I-765 relative to my program end date?",
+          "How will the fixed-admission rule affect whether I also need to file an EOS when I apply for OPT after September 15, 2026?"
+        ],
+        "documentsOrDatesToBring": [
+          "Form I-20 showing program end date.",
+          "Planned DSO recommendation date or email confirming the recommendation."
+        ]
+      },
+      "possiblePathways": [
+        {
+          "id": "pathway-stem-opt-follow-on",
+          "title": "Discuss future STEM OPT timing after initial OPT",
+          "whyItMayBeRelevant": "Students considering STEM OPT must plan an additional Form I-765 filing window and, under the new rule, may need concurrent EOS filings for fixed-admission periods.[web:72][web:79]",
+          "eligibilityNotDetermined": true,
+          "confirmationNeeded": [
+            "Field of study and STEM OPT eligibility.",
+            "Projected OPT end date."
+          ],
+          "questionsForDso": [
+            "If I may be eligible for STEM OPT, how should I plan my STEM OPT filing and any required EOS application under the new admission framework?"
+          ]
+        }
+      ],
+      "sourceIds": ["uscis-opt", "uscis-stem-opt"],
+      "minimalSupportingExcerpt": "Must apply after your DSO ... may apply up to 90 days before you complete a full academic year ... USCIS must receive Form I-765 for OPT within defined windows tied to DSO recommendation and program completion.[web:71][web:73]",
+      "boundaryTests": [
+        {
+          "description": "DSO recommendation given 30 days before program end",
+          "inputs": {
+            "i20ProgramEndDate": "2027-05-15",
+            "dsoOptRecommendationDate": "2027-04-15"
+          },
+          "asOfDate": "2027-04-16",
+          "expectedOutcome": "Earliest filing date for Form I-765 is 2027-02-14 (90 days before program end); latest filing date is 2027-06-14 (60 days after program end and within grace period), assuming DSO recommendation remains valid."
+        },
+        {
+          "description": "DSO recommendation after program end",
+          "inputs": {
+            "i20ProgramEndDate": "2027-05-15",
+            "dsoOptRecommendationDate": "2027-05-20"
+          },
+          "asOfDate": "2027-05-21",
+          "expectedOutcome": "Form I-765 must be received by USCIS by approximately 2027-07-19 (60 days after recommendation) and within the 60-day grace period ending 2027-07-14; DSOs and attorneys must reconcile these windows."
+        },
+        {
+          "description": "Late filing beyond 60 days after recommendation",
+          "inputs": {
+            "i20ProgramEndDate": "2027-05-15",
+            "dsoOptRecommendationDate": "2027-04-15"
+          },
+          "asOfDate": "2027-08-01",
+          "expectedOutcome": "Rule flags that official filing windows have passed; Status Compass does not conclude anything about status but directs student to seek legal advice."
+        }
+      ],
+      "uncertainty": "Exact calendar computations for overlapping windows must be verified against updated USCIS instructions; Status Compass cannot guarantee that derived dates reflect all nuances (e.g., lockbox receipt dates, mail delays).",
+      "humanReviewRequired": true
+    },
+    {
+      "id": "rule-f1-travel-readmission-fixed-period",
+      "title": "International travel after Sept. 15, 2026 may trigger fixed-date readmission",
+      "topic": "travel",
+      "classifications": ["F-1"],
+      "legalStatus": "published_pending_effective",
+      "activeFrom": "2026-09-15",
+      "activeUntil": null,
+      "doNotActivateBefore": "2026-09-15",
+      "appliesWhen": {
+        "all": [
+          "studentClassificationIsF1",
+          "plannedInternationalTravel",
+          "expectedReentryOnOrAfterEffectiveDate"
+        ],
+        "any": [],
+        "not": []
+      },
+      "requiredInputs": [
+        "plannedDepartureDate",
+        "expectedReentryDate",
+        "currentAdmissionFramework"
+      ],
+      "calculation": {
+        "type": "none",
+        "formula": "No deterministic deadline is computed; instead, Status Compass flags that reentry on or after the effective date is likely to result in a new I-94 with a fixed AUD reflecting the new rule, replacing D/S, and that outcomes depend on CBP discretion and current guidance.[page:1][web:18][web:91]",
+        "dayCounting": null,
+        "weekendHolidayTreatment": null,
+        "basis": "Federal Register transition text and multiple university guidance documents note that F and J nonimmigrants traveling and reentering after the effective date will receive new I-94 records with fixed admit-until dates under the new framework.[page:1][web:18][web:91][web:3][web:60]",
+        "isLegalDeadline": false
+      },
+      "finding": {
+        "attention": "confirm_now",
+        "headline": "Travel and reentry on or after Sept. 15, 2026 can convert D/S admissions to fixed dates",
+        "explanation": "Students who travel internationally and reenter the United States on or after September 15, 2026 should expect CBP to issue a new I-94 with a fixed Admit Until Date under the new rule, which may shorten grace periods and affect future EOS and unlawful-presence calculations; the application cannot predict CBP’s exact decision.[page:1][web:18][web:91]",
+        "whyThisAppears": "Status Compass uses this rule to highlight that travel decisions around the effective date can change the admission framework and that students should confirm expectations with a DSO before travel.",
+        "officialRationale": "DHS states that shifting admissions to fixed periods is intended to ensure periodic review and enforcement; travel and readmission are one of the ways students obtain new fixed admission periods.",
+        "studentImpact": "Students planning travel during or after the transition period must consider that reentry may move them from D/S with a 60-day grace period to fixed admission with a 30-day grace period and new EOS requirements; the product cannot forecast admission length or CBP discretion.",
+        "knownFacts": [
+          "DHS and university guidance state that F/J individuals already in D/S who travel and reenter after the effective date will receive new I-94 records with fixed AUDs.[page:1][web:18][web:91]",
+          "Travel decisions can therefore affect whether a student remains under transition rules or becomes subject to the permanent fixed-admission system immediately.[web:3][web:60]",
+          "CBP retains discretion over admission decisions, including length of stay; outcomes cannot be guaranteed by an application.[web:59]"
+        ],
+        "confirmationNeeded": [
+          "Exact planned departure and reentry dates.",
+          "Current I-94 notation and SEVIS status at time of travel.",
+          "Any pending EOS or OPT/STEM OPT applications."
+        ],
+        "actions": [
+          "Encourage the student to retrieve their current I-94 and review it with a DSO before travel.",
+          "Advise the student to ask the DSO how travel may affect transition rules, grace periods, and EOS needs."
+        ],
+        "questionsForDso": [
+          "If I travel and return after September 15, 2026, how will CBP likely calculate my new Admit Until Date?",
+          "Should I consider delaying travel until after we have more guidance on implementation of the rule?"
+        ],
+        "documentsOrDatesToBring": [
+          "Current I-94 record.",
+          "Travel itinerary with planned departure and reentry dates.",
+          "Any pending USCIS receipts if applications are in progress."
+        ]
+      },
+      "possiblePathways": [
+        {
+          "id": "pathway-travel-during-opt",
+          "title": "Discuss travel during OPT/STEM OPT under the new rule",
+          "whyItMayBeRelevant": "Travel during OPT or STEM OPT after the effective date may result in a new fixed admission period and could interact with employment and EOS requirements.",
+          "eligibilityNotDetermined": true,
+          "confirmationNeeded": [
+            "Whether the student will be in OPT/STEM OPT at the time of travel."
+          ],
+          "questionsForDso": [
+            "How might travel during my OPT or STEM OPT period affect my I-94, employment, and EOS obligations under the new rule?"
+          ]
+        }
+      ],
+      "sourceIds": ["fr-2026-14439", "uwisc-iss-ds-rule", "yale-oiss-ds-faq"],
+      "minimalSupportingExcerpt": "If you travel and reenter the U.S. on or after September 15, 2026, you will receive an I-94 with a date-specific AUD ... F and J students and scholars who enter the U.S. after September 15, 2026, will have a fixed I-94 AUD.[web:91][web:3]",
+      "boundaryTests": [
+        {
+          "description": "Student in D/S planning travel before effective date",
+          "inputs": {
+            "plannedDepartureDate": "2026-08-25",
+            "expectedReentryDate": "2026-09-10",
+            "currentAdmissionFramework": "D/S"
+          },
+          "asOfDate": "2026-08-19",
+          "expectedOutcome": "Rule notes that reentry before the effective date should still occur under D/S; fixed-admission conversion is unlikely before 2026-09-15."
+        },
+        {
+          "description": "Student in D/S planning travel and reentry after effective date",
+          "inputs": {
+            "plannedDepartureDate": "2026-09-20",
+            "expectedReentryDate": "2026-10-01",
+            "currentAdmissionFramework": "D/S"
+          },
+          "asOfDate": "2026-08-19",
+          "expectedOutcome": "Rule flags that reentry on 2026-10-01 will likely result in a fixed AUD; student advised to consult DSO."
+        },
+        {
+          "description": "Student already in fixed-admission system planning travel",
+          "inputs": {
+            "plannedDepartureDate": "2027-06-01",
+            "expectedReentryDate": "2027-06-15",
+            "currentAdmissionFramework": "fixed"
+          },
+          "asOfDate": "2027-05-01",
+          "expectedOutcome": "Rule highlights that new I-94 may reset admission period; product cannot predict length or conditions."
+        }
+      ],
+      "uncertainty": "CBP discretion and future DHS guidance will heavily influence outcomes; Status Compass cannot predict individualized admission periods or guarantee readmission.",
+      "humanReviewRequired": true
+    },
+    {
+      "id": "rule-f1-unlawful-presence-fixed-aud",
+      "title": "Unlawful presence risk after a fixed Admit Until Date for F-1 students",
+      "topic": "unlawful_presence",
+      "classifications": ["F-1"],
+      "legalStatus": "published_pending_effective",
+      "activeFrom": "2026-09-15",
+      "activeUntil": null,
+      "doNotActivateBefore": "2026-09-15",
+      "appliesWhen": {
+        "all": [
+          "studentClassificationIsF1",
+          "i94NotationIsDate"
+        ],
+        "any": [],
+        "not": []
+      },
+      "requiredInputs": [
+        "i94AdmitUntilDate",
+        "pendingOrApprovedEos",
+        "pendingOrApprovedOtherBenefits"
+      ],
+      "calculation": {
+        "type": "none",
+        "formula": "No precise unlawful-presence clock is computed; instead, Status Compass indicates that unlawful presence generally begins the day after the I-94 admit-until date unless a timely EOS or other benefit filing protects the period of stay, and that exact determinations require legal analysis.[web:61][page:1][web:18]",
+        "dayCounting": "USCIS guidance states that unlawful presence typically starts on the day after the I-94 admit-until date for nonimmigrants admitted until a specific date, subject to exceptions.[web:61]",
+        "weekendHolidayTreatment": "Unlawful presence counting follows calendar days regardless of weekends or holidays.",
+        "basis": "USCIS unlawful-presence guidance and DHS preamble discussion explain that moving from D/S to fixed-date admissions changes the point at which unlawful presence can begin, tying it more directly to the I-94 expire date.[web:61][page:1][web:18]",
+        "isLegalDeadline": false
+      },
+      "finding": {
+        "attention": "monitor",
+        "headline": "Under fixed admission, staying beyond the I-94 date without timely EOS may lead to unlawful presence",
+        "explanation": "For F-1 students admitted with a fixed AUD, remaining in the United States beyond that date without a timely EOS or other protective filing can cause unlawful presence to accrue beginning the next day, potentially leading to three-year or ten-year bars; Status Compass cannot calculate or certify individual unlawful-presence periods but highlights the risk.[web:61][page:1][web:18]",
+        "whyThisAppears": "Status Compass uses this rule to underscore the importance of the I-94 admit-until date under the new system and to direct students to DSOs or attorneys for any questions about unlawful presence.",
+        "officialRationale": "DHS states that the new fixed-admission system will allow more effective enforcement of unlawful-presence inadmissibility grounds by giving immigration officers clearer end dates for authorized stays.[page:1][web:18]",
+        "studentImpact": "Students admitted under the fixed system must treat the I-94 AUD as a serious boundary: failure to depart or obtain an EOS before that date may have long-term consequences; however, only legal authorities can determine whether unlawful presence has actually accrued in a specific case.[web:61][web:37]",
+        "knownFacts": [
+          "USCIS guidance states that unlawful presence typically begins the day after the I-94 admit-until date for fixed-date admissions.[web:61]",
+          "Under D/S, unlawful presence generally begins only after status ends and the individual remains, which DHS views as harder to enforce.[web:61][page:1][web:18]",
+          "DHS explicitly ties the new rule to improved enforcement of unlawful presence-related inadmissibility grounds.[page:1][web:18]"
+        ],
+        "confirmationNeeded": [
+          "The exact I-94 admit-until date.",
+          "Whether any timely EOS, change-of-status, or other applications have been filed and remain pending.",
+          "Whether any agency has made a formal finding of status violation."
+        ],
+        "actions": [
+          "Encourage students to track the I-94 AUD and consider EOS, travel, or program changes before that date.",
+          "Direct any student concerned about unlawful-presence accrual to consult a qualified immigration attorney."
+        ],
+        "questionsForDso": [
+          "How should I plan my EOS or departure timeline relative to my I-94 admit-until date to avoid potential unlawful-presence issues?",
+          "Can the school refer me to legal resources if I am worried about having stayed past my I-94 date?"
+        ],
+        "documentsOrDatesToBring": [
+          "I-94 record showing admit-until date.",
+          "Any USCIS receipts showing pending benefit applications."
+        ]
+      },
+      "possiblePathways": [
+        {
+          "id": "pathway-legal-consult-unlawful-presence",
+          "title": "Seek legal consultation about unlawful presence",
+          "whyItMayBeRelevant": "Unlawful presence determinations have complex consequences and cannot be made by Status Compass; students should obtain individualized legal advice.",
+          "eligibilityNotDetermined": true,
+          "confirmationNeeded": [],
+          "questionsForDso": [
+            "Can you help me connect with legal resources to understand how unlawful presence applies to my situation?"
+          ]
+        }
+      ],
+      "sourceIds": ["uscis-unlawful-presence", "fr-2026-14439"],
+      "minimalSupportingExcerpt": "Typically, you start accruing unlawful presence if you stay in the United States after the date noted on your Form I-94 ... This unspecified period of time is referred to as duration of status (D/S) ... DHS believes that the admission of F, J, and I nonimmigrants for D/S is not appropriate ... replacing admissions for D/S with admissions for a fixed time period ... will strengthen the integrity of these nonimmigrant classifications while enhancing national security.[web:61][page:1][web:18]",
+      "boundaryTests": [
+        {
+          "description": "Admission has not yet reached AUD",
+          "inputs": {
+            "i94AdmitUntilDate": "2027-05-15",
+            "pendingOrApprovedEos": false,
+            "pendingOrApprovedOtherBenefits": false
+          },
+          "asOfDate": "2027-04-01",
+          "expectedOutcome": "Rule highlights importance of upcoming AUD but notes that unlawful-presence questions are premature; attention=monitor."
+        },
+        {
+          "description": "Admission date passes without EOS",
+          "inputs": {
+            "i94AdmitUntilDate": "2027-05-15",
+            "pendingOrApprovedEos": false,
+            "pendingOrApprovedOtherBenefits": false
+          },
+          "asOfDate": "2027-05-20",
+          "expectedOutcome": "Rule flags potential unlawful-presence risk and directs student to legal counsel; Status Compass does not calculate exact days or make determinations."
+        },
+        {
+          "description": "Timely EOS filed before AUD",
+          "inputs": {
+            "i94AdmitUntilDate": "2027-05-15",
+            "pendingOrApprovedEos": true,
+            "pendingOrApprovedOtherBenefits": false
+          },
+          "asOfDate": "2027-05-20",
+          "expectedOutcome": "Rule notes that pending EOS may protect the student’s authorized stay; unlawful-presence analysis still requires legal review."
+        }
+      ],
+      "uncertainty": "Status Compass cannot determine whether unlawful presence has accrued in any individual case, nor whether exceptions (such as tolling during certain filings) apply; all such determinations must be made by agencies or legal counsel.",
+      "humanReviewRequired": true
+    }
+  ]
+}

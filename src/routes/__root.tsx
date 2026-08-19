@@ -10,6 +10,9 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { StayValidProvider } from "@/hooks/useStayValid";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -77,14 +80,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      {
+        title: "Stay Valid — F-1 status timelines and DSO meeting kits",
+      },
+      {
+        name: "description",
+        content:
+          "Stay Valid turns F-1 immigration policy into dated checkpoints and a printable DSO meeting kit, with every item traced to an official source.",
+      },
+      { property: "og:title", content: "Stay Valid" },
+      {
+        property: "og:description",
+        content:
+          "F-1 policy turned into timelines, checkpoints, and DSO meeting kits. Educational information, not legal advice.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+
     ],
     links: [
       {
@@ -92,6 +104,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400&family=Source+Sans+3:ital,wght@0,300..700;1,400&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -119,8 +137,20 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <StayValidProvider>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-ink focus:px-4 focus:py-2 focus:text-ink-foreground"
+        >
+          Skip to main content
+        </a>
+        <SiteHeader />
+        <main id="main" className="min-h-[60vh]">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <SiteFooter />
+      </StayValidProvider>
     </QueryClientProvider>
   );
 }
