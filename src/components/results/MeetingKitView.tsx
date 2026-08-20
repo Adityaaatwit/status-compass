@@ -131,7 +131,95 @@ export function MeetingKitView({ kit }: { kit: MeetingKit }) {
           {DISCLAIMER_TEXT}
         </p>
       </div>
+
+      <SendToDso />
     </section>
+  );
+}
+
+const OUTLOOK_COMPOSE_URL = "https://outlook.office.com/mail/deeplink/compose?to=";
+
+/**
+ * Email handoff. Deliberately dumb: no recipient, no student data in either
+ * URL, no attachment. A browser cannot attach a local file to a new message,
+ * and this app never touches a mailbox.
+ */
+function SendToDso() {
+  const [mailAppFailed, setMailAppFailed] = useState(false);
+
+  function openMailApp() {
+    setMailAppFailed(false);
+    const before = Date.now();
+    try {
+      window.location.href = "mailto:";
+    } catch {
+      setMailAppFailed(true);
+      return;
+    }
+    // No reliable success signal exists; if the page never lost focus shortly
+    // after the attempt, assume no mail client is configured.
+    window.setTimeout(() => {
+      if (document.hasFocus() && Date.now() - before < 3000) setMailAppFailed(true);
+    }, 1200);
+  }
+
+  return (
+    <div className="sv-card print-hidden mt-6 p-5 sm:p-6">
+      <h3 className="text-lg font-semibold text-foreground">Send this to your DSO</h3>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+        Save your meeting kit as a PDF, open your preferred email service, enter your DSO&rsquo;s
+        email address and attach the saved file. Review everything before sending.
+      </p>
+
+      <div className="mt-4 flex flex-wrap gap-3">
+        <a
+          href={OUTLOOK_COMPOSE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open Outlook on the web in a new tab with a blank message"
+          className="sv-transition inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+        >
+          <MailOpen aria-hidden="true" className="size-4" />
+          Open Outlook
+        </a>
+        <button
+          type="button"
+          onClick={openMailApp}
+          aria-label="Open a blank message in your device's email application"
+          className="sv-transition inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+        >
+          <Mail aria-hidden="true" className="size-4" />
+          Open email app
+        </button>
+      </div>
+
+      <p className="mt-3 text-xs text-muted-foreground">
+        Microsoft may ask you to sign in before the Outlook compose window opens. Both links open a
+        blank message with no recipient and no information from your answers.
+      </p>
+
+      <p aria-live="polite" className="mt-2 text-xs text-attention-confirm-now">
+        {mailAppFailed
+          ? "Your browser could not open an email application. Open your email in a browser tab instead, or copy your DSO's address into a new message manually."
+          : ""}
+      </p>
+
+      <ol className="mt-4 grid gap-2 text-sm text-foreground sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          "Print or save the meeting kit as a PDF",
+          "Open Outlook or your email app",
+          "Enter your DSO’s email address",
+          "Attach the saved PDF and review it before sending",
+        ].map((step, index) => (
+          <li key={step} className="rounded-lg border border-border bg-muted/40 p-3">
+            <span className="block text-xs font-semibold text-muted-foreground">
+              Step {index + 1}
+            </span>
+            {step}
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 
