@@ -73,13 +73,16 @@ export const DEFAULT_LIMITS: AiLimits = {
 };
 
 export function readAiConfig(): AiConfig {
-  // Groq leads because its free tier is the more forgiving of the two; Gemini
-  // covers the case where Groq is rate-limited or unavailable.
-  const provider = readProvider("AI_PROVIDER", "groq") ?? "groq";
-  const fallbackProvider = readProvider("AI_FALLBACK_PROVIDER", "gemini");
+  // Gemini leads; Groq covers the case where Gemini is rate-limited, timing out
+  // or temporarily unavailable. Neither is ever required: the deterministic
+  // answer is the final fallback.
+  const provider = readProvider("AI_PROVIDER", "gemini") ?? "gemini";
+  const fallbackProvider = readProvider("AI_FALLBACK_PROVIDER", "groq");
 
   return {
-    enabled: readEnv("AI_CHAT_ENABLED").toLowerCase() === "true",
+    // Enabled unless explicitly switched off. Without a key the layer is still
+    // unusable, so this cannot turn on provider calls on its own.
+    enabled: readEnv("AI_CHAT_ENABLED").toLowerCase() !== "false",
     provider,
     // A provider must never fall back to itself.
     fallbackProvider: fallbackProvider === provider ? null : fallbackProvider,
