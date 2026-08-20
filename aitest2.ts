@@ -61,3 +61,23 @@ for (const [name, provider] of [
     console.log(name, "FAIL", (error as { kind?: string }).kind, (error as Error).message);
   }
 }
+// probe raw groq
+import { SYSTEM_PROMPT, buildContextText, buildUserPrompt } from "@/server/ai/prompt";
+const ctx = buildContextText(input);
+const up = buildUserPrompt(input, ctx);
+const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  method: "POST",
+  headers: { "content-type": "application/json", authorization: `Bearer ${config.groq.apiKey}` },
+  body: JSON.stringify({
+    model: config.groq.model,
+    temperature: 0.2,
+    max_tokens: config.limits.maxOutputTokens,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: up },
+    ],
+  }),
+});
+console.log("groq raw", r.status, (await r.text()).slice(0, 400));
+console.log("promptChars", up.length, "model", config.groq.model);
