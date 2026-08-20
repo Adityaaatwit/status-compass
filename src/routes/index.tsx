@@ -148,6 +148,37 @@ function HomePage() {
         </div>
       </section>
 
+      <section
+        aria-labelledby="support-heading"
+        className="mx-auto max-w-6xl px-4 pb-4 sm:px-6 lg:pb-10"
+      >
+        <div className="sv-card grid items-center gap-8 p-6 sm:p-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <StudentSupportIllustration className="w-full" />
+          <div>
+            <h2
+              id="support-heading"
+              className="text-2xl font-semibold text-foreground sm:text-3xl"
+            >
+              Built for the conversation, not instead of it
+            </h2>
+            <p className="sv-prose mt-3 text-muted-foreground">
+              Your DSO is the person who can confirm your status and sign your documents. Stay Valid
+              exists so you arrive at that meeting with the right dates, the right questions, and
+              the source behind each one — so the time you get is spent on decisions rather than
+              on catching up.
+            </p>
+            <Link
+              to="/check"
+              className="sv-transition mt-5 inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-3 text-sm font-semibold text-ink-foreground hover:bg-ink/90"
+            >
+              Build my meeting kit
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+
       <section aria-labelledby="scenarios-heading" className="border-y border-border bg-card py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <h2 id="scenarios-heading" className="text-2xl font-semibold text-foreground sm:text-3xl">
