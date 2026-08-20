@@ -10,6 +10,25 @@ your immigration status and never states eligibility.
 
 ---
 
+## Table of contents
+
+1. [What it does](#what-it-does)
+2. [Tech stack](#tech-stack)
+3. [Project structure](#project-structure)
+4. [How it works](#how-it-works)
+5. [Routes and pages](#routes-and-pages)
+6. [Component inventory](#component-inventory)
+7. [Domain logic](#domain-logic)
+8. [Ask Stay Valid](#ask-stay-valid)
+9. [Optional AI layer](#optional-ai-layer)
+10. [Privacy and security](#privacy-and-security)
+11. [Tests](#tests)
+12. [Quick start](#quick-start)
+13. [Configuration](#configuration)
+14. [Status and disclaimer](#status-and-disclaimer)
+
+---
+
 ## What it does
 
 An F-1 student answers a handful of non-identifying questions — what their I-94
@@ -31,55 +50,95 @@ nothing after you close the tab.
 
 ---
 
-## Core evaluation is deterministic and works without AI
+## Tech stack
 
-Optional server-side AI can explain verified results but cannot create or modify
-rules.
+| Layer | Technology |
+| --- | --- |
+| Framework | TanStack Start v1 + TanStack Router |
+| UI library | React 19 |
+| Language | TypeScript 5.8 (strict) |
+| Build tool | Vite 8 |
+| Styling | Tailwind CSS v4 + OKLCH design tokens |
+| Components | Radix UI primitives + shadcn/ui |
+| Forms | React Hook Form + Zod |
+| Icons | Lucide React |
+| Testing | Vitest |
+| Target runtime | Cloudflare Worker via Nitro |
 
-That distinction is the whole design:
-
-| | Deterministic engine | Optional AI layer |
-| --- | --- | --- |
-| Decides which rules apply | ✅ | ❌ |
-| Calculates dates and deadlines | ✅ | ❌ |
-| Determines status or eligibility | ❌ *(by design)* | ❌ |
-| Rephrases verified findings | — | ✅ |
-| Runs with no API key | ✅ | n/a |
-| Can be switched off entirely | — | ✅ *(default)* |
-
-With AI disabled — the default — asking a question makes **no network request at
-all**. Classification, retrieval and answer construction all happen in your
-browser. The timeline, checkpoints, pathways, checklist, calendar export and
-meeting kit never involve an AI provider under **any** configuration.
+The AI layer added **no new runtime dependencies** — providers are called with
+`fetch`.
 
 ---
 
-## Quick start
+## Project structure
 
-```bash
-npm install
+```
+.
+├── .env.example              # Template for optional AI keys
+├── .gitattributes            # Forces LF line endings
+├── bunfig.toml               # Bun configuration
+├── components.json           # shadcn/ui registry
+├── docs/
+│   ├── ARCHITECTURE.md       # Layer-by-layer design
+│   ├── CLAUDE_AUDIT.md       # Audit findings and change record
+│   ├── HANDOFF.md            # Run, deploy, and next-work guide
+│   └── POLICY_AUDIT.md       # Corpus questions for a legal reviewer
+├── public/                   # Static assets
+└── src/
+    ├── assets/               # Images (e.g. student-support.png)
+    ├── components/
+    │   ├── chat/             # Ask Stay Valid panel and messages
+    │   ├── illustrations/    # Custom accessible illustrations
+    │   ├── intake/           # Intake wizard and field components
+    │   ├── layout/           # Site header and footer
+    │   ├── results/          # Dashboard views (timeline, roadmap, etc.)
+    │   ├── shared/           # Badges, disclaimer, source links
+    │   ├── sources/          # Source status chips
+    │   └── ui/               # shadcn/ui components
+    ├── data/                 # Research corpus (read-only source of truth)
+    │   ├── candidate-updates.json
+    │   ├── rules.json
+    │   └── sources.json
+    ├── domain/               # Pure logic — no React, no I/O, no clock
+    │   ├── chat/             # Retrieval, safety, deterministic answers
+    │   ├── buildChecklist.ts
+    │   ├── buildMeetingKit.ts
+    │   ├── buildPathways.ts
+    │   ├── buildTimeline.ts
+    │   ├── dataAdapters.ts
+    │   ├── dataValidation.ts
+    │   ├── dateCalculations.ts
+    │   ├── evaluateRules.ts
+    │   ├── intakeQuestions.ts
+    │   ├── scenarios.ts
+    │   └── types.ts
+    ├── hooks/                # React state hooks
+    │   ├── useAskStayValid.tsx
+    │   ├── useStayValid.tsx
+    │   └── use-mobile.tsx
+    ├── lib/                  # Shared utilities
+    ├── routes/               # TanStack Start file-based routes
+    │   ├── __root.tsx        # App shell and providers
+    │   ├── check.tsx         # Intake questionnaire
+    │   ├── index.tsx         # Landing page with demo scenarios
+    │   ├── plan.tsx          # Results dashboard + chat
+    │   ├── privacy.tsx       # Privacy page
+    │   └── sources.tsx       # Source library
+    ├── rpc/
+    │   └── askStayValid.ts   # Client-callable server function stub
+    ├── server/               # Server-only code (import-protected)
+    │   └── ai/               # Provider abstraction, prompts, validation
+    ├── utils/                # Calendar export, dates, print
+    ├── router.tsx            # Router configuration
+    ├── routeTree.gen.ts      # Auto-generated (do not edit)
+    ├── server.ts             # Server entry
+    ├── start.ts              # Start configuration
+    └── styles.css            # Design tokens and global styles
 ```
 
-```bash
-npm run dev
-```
-
-Open `http://localhost:8080`. No configuration required.
-
-| Script | Does |
-| --- | --- |
-| `npm run dev` | Dev server |
-| `npm run build` | Production build (Cloudflare Worker via Nitro) |
-| `npm run preview` | Serve the production build |
-| `npm run test` | Vitest, once |
-| `npm run test:watch` | Vitest, watch mode |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint + Prettier |
-| `npm run verify` | typecheck → lint → test → build |
-
-The canonical lockfile is `bun.lock`; `package-lock.json` is gitignored so it
-cannot compete. `.gitattributes` forces LF line endings — without it a Windows
-checkout produces thousands of spurious Prettier errors.
+`src/server/**` cannot be imported from client code — the framework's
+import-protection plugin denies it. That is why the server function lives in
+`src/rpc/` and the implementation in `src/server/ai/`.
 
 ---
 
@@ -138,17 +197,112 @@ of context still tells you what it is.
 Asked *"has anyone told you there is a problem with your F-1 status?"*, a student
 can honestly answer **"I'm not sure"** — and should be able to.
 
-Earlier, that answer silently removed the most important rule for D/S students:
-no finding, no note, nothing on the page. Silence there reads as *"this does not
-apply to you"*, which is exactly the determination the product forbids itself
-from making.
-
 Now:
 
 - answer "no problem that I know of" → the rule appears, **labelled as resting on
   your own answer**, with the caveat that only a DSO can confirm it;
 - any other answer → an explicit *"only your DSO can answer this"* note, so you
   can see the topic was held back rather than ruled out.
+
+---
+
+## Routes and pages
+
+| URL | File | Purpose |
+| --- | --- | --- |
+| `/` | `src/routes/index.tsx` | Landing page, how it works, demo scenario cards |
+| `/check` | `src/routes/check.tsx` | Privacy-first intake questionnaire; supports `focus` deep-links from results |
+| `/plan` | `src/routes/plan.tsx` | Full results dashboard with timeline, findings, pathways, chat, and meeting kit |
+| `/sources` | `src/routes/sources.tsx` | Complete source library and candidate-update watchlist |
+| `/privacy` | `src/routes/privacy.tsx` | Privacy-by-design disclosure |
+
+`routeTree.gen.ts` is generated automatically. Do not edit it.
+
+---
+
+## Component inventory
+
+### Layout
+
+| Component | Location | Purpose |
+| --- | --- | --- |
+| `SiteHeader` | `src/components/layout/SiteHeader.tsx` | Top navigation, "Clear my information" action |
+| `SiteFooter` | `src/components/layout/SiteFooter.tsx` | Footer links and notices |
+
+### Intake
+
+| Component | Location | Purpose |
+| --- | --- | --- |
+| `IntakeWizard` | `src/components/intake/IntakeWizard.tsx` | Goal-driven multi-step questionnaire |
+| `Field` | `src/components/intake/Field.tsx` | Reusable form field wrapper |
+
+### Results dashboard (`/plan`)
+
+| Component | Location | Purpose |
+| --- | --- | --- |
+| `AtAGlance` | `src/components/results/AtAGlance.tsx` | Top summary tiles: attention level, next checkpoint, action count |
+| `HorizontalTimeline` | `src/components/results/HorizontalTimeline.tsx` | Scrollable chronological milestone view |
+| `ActionRoadmap` | `src/components/results/ActionRoadmap.tsx` | Three-column grouping: Do Now, Prepare Next, Monitor |
+| `PathwayMap` | `src/components/results/PathwayMap.tsx` | Visual card-based pathways to discuss with a DSO |
+| `FindingCard` | `src/components/results/FindingCard.tsx` | Expandable rule findings with attention level and reasoning |
+| `EvidenceTable` | `src/components/results/EvidenceTable.tsx` | Responsive table of sources backing the findings |
+| `MeetingKitView` | `src/components/results/MeetingKitView.tsx` | Print-optimised one-page DSO meeting summary |
+
+### Ask Stay Valid chat
+
+| Component | Location | Purpose |
+| --- | --- | --- |
+| `AskStayValid` | `src/components/chat/AskStayValid.tsx` | Chat panel with input, disclosure, and message list |
+| `ChatMessageView` | `src/components/chat/ChatMessageView.tsx` | Individual user/assistant message rendering |
+| `ChatSourceCard` | `src/components/chat/ChatSourceCard.tsx` | Source cards shown under assistant answers |
+
+### Shared
+
+| Component | Location | Purpose |
+| --- | --- | --- |
+| `AttentionBadge` | `src/components/shared/AttentionBadge.tsx` | `confirm_now`, `prepare`, `monitor`, `information` indicators |
+| `DateKindBadge` | `src/components/shared/DateKindBadge.tsx` | `official`, `document`, `reminder`, `needs_confirmation` indicators |
+| `Disclaimer` | `src/components/shared/Disclaimer.tsx` | Legal and educational notices |
+| `InsufficientInfo` | `src/components/shared/InsufficientInfo.tsx` | Missing-input recovery with deep-links to `/check` |
+| `SourceLink` | `src/components/shared/SourceLink.tsx` | External source link with accessible new-tab hint |
+| `LegalStatusChip` | `src/components/sources/LegalStatusChip.tsx` | Verification status chips |
+
+### Illustrations
+
+| Component | Location | Purpose |
+| --- | --- | --- |
+| `StudentSupportIllustration` | `src/components/illustrations/StudentSupportIllustration.tsx` | Hand-drawn human illustration used on the home page and support sections |
+
+---
+
+## Domain logic
+
+All files under `src/domain/` are pure: no React, no I/O, no clock reads.
+
+| Module | Responsibility |
+| --- | --- |
+| `types.ts` | Core corpus, profile, and result types |
+| `evaluateRules.ts` | Pure rules engine: `(profile, corpus, asOfDate) -> EvaluationResult` |
+| `dateCalculations.ts` | ISO-8601 date math, leap-year and DST-safe |
+| `dataAdapters.ts` | Normalise raw JSON into typed records; strip citation markers from display text |
+| `dataValidation.ts` | Report corpus usability without rewriting |
+| `buildTimeline.ts` | Merge document dates, official deadlines, and reminders into one chronology |
+| `buildPathways.ts` | Generate topic cards from findings |
+| `buildChecklist.ts` | Produce prioritised actions from findings and dates |
+| `buildMeetingKit.ts` | Build the printable DSO meeting summary |
+| `intakeQuestions.ts` | Registry mapping student goals to required questions |
+| `scenarios.ts` | Four demonstration personas |
+
+### Chat domain (`src/domain/chat/`)
+
+| Module | Responsibility |
+| --- | --- |
+| `chatTypes.ts` | Shared chat types |
+| `safety.ts` | Question classification into safety categories |
+| `identifierDetection.ts` | Block messages that may contain SEVIS, passport, visa, A-numbers, etc. |
+| `normalizeQuestion.ts` | Normalise spelling and punctuation before retrieval |
+| `retrieveVerifiedContext.ts` | Ranked retrieval over verified rules and sources only |
+| `buildDeterministicAnswer.ts` | Build a grounded answer from corpus wording, no AI |
 
 ---
 
@@ -195,7 +349,7 @@ number. Every answer states its origin — *quoted from verified sources* or
 
 ---
 
-## Optional AI (off by default)
+## Optional AI layer
 
 Provider order: **Gemini → Groq → deterministic.**
 
@@ -247,7 +401,7 @@ shop for a permissive model. No AI call happens on page load.
 
 ---
 
-## Privacy
+## Privacy and security
 
 - No account, no login, no uploads.
 - No name, date of birth, SEVIS ID, passport, visa, A-number or receipt number is
@@ -264,42 +418,6 @@ shop for a permissive model. No AI call happens on page load.
 
 Full detail on the in-app privacy page and in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-
----
-
-## Project layout
-
-```
-src/
-├── data/            research corpus (read-only source of truth)
-├── domain/          pure logic — no React, no I/O, no clock
-│   └── chat/        question normalisation, retrieval, safety, local answers
-├── rpc/             the server-function boundary (client-callable stub)
-├── server/ai/       provider abstraction, prompts, validation (server-only)
-├── components/      intake, results, chat, shared, ui
-├── hooks/           in-memory session and conversation state
-├── routes/          TanStack Start file-based routes
-└── utils/           calendar export, date formatting, print
-docs/
-├── ARCHITECTURE.md    how it fits together
-├── CLAUDE_AUDIT.md    audit findings, bugs fixed, remaining work
-├── POLICY_AUDIT.md    corpus concerns for a qualified reviewer
-└── HANDOFF.md         setup, deployment, next steps
-```
-
-`src/server/**` cannot be imported from client code — the framework's
-import-protection plugin denies it. That is why the server function lives in
-`src/rpc/` and the implementation in `src/server/ai/`.
-
----
-
-## Stack
-
-React 19 · TypeScript 5.8 (strict) · TanStack Start + Router · Vite · Tailwind
-CSS v4 · Radix UI · Zod · Vitest · Cloudflare Worker via Nitro.
-
-The AI layer added **no new runtime dependencies** — providers are called with
-`fetch`.
 
 ---
 
@@ -323,7 +441,59 @@ no answer — deterministic or AI — ever states a legal conclusion.
 
 ---
 
-## Status
+## Quick start
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:8080`. No configuration required.
+
+| Script | Does |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build (Cloudflare Worker via Nitro) |
+| `npm run preview` | Serve the production build |
+| `npm run test` | Vitest, once |
+| `npm run test:watch` | Vitest, watch mode |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint + Prettier |
+| `npm run verify` | typecheck → lint → test → build |
+
+The canonical lockfile is `bun.lock`; `package-lock.json` is gitignored so it
+cannot compete. `.gitattributes` forces LF line endings — without it a Windows
+checkout produces thousands of spurious Prettier errors.
+
+---
+
+## Configuration
+
+### Optional AI environment variables
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `AI_CHAT_ENABLED` | `false` | Master switch; must be exactly `true` |
+| `AI_PROVIDER` | `gemini` | Primary provider |
+| `AI_FALLBACK_PROVIDER` | none | Used only on timeout/429/5xx |
+| `GEMINI_API_KEY` | — | Secret |
+| `GEMINI_MODEL` | `gemini-2.0-flash` | |
+| `GROQ_API_KEY` | — | Secret |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | |
+| `AI_MAX_QUESTION_CHARS` | `1200` | |
+| `AI_MAX_CONTEXT_CHARS` | `12000` | |
+| `AI_MAX_HISTORY_MESSAGES` | `6` | |
+| `AI_MAX_OUTPUT_TOKENS` | `600` | |
+| `AI_TIMEOUT_MS` | `15000` | |
+
+All numeric values are clamped in code, so a typo cannot empty a free tier.
+
+---
+
+## Status and disclaimer
 
 The research corpus is self-declared
 `research_draft_requires_human_review`, and every rule carries
