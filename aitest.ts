@@ -1,12 +1,12 @@
 /* Temporary live provider check. Deleted after use. */
 import { loadCorpus } from "@/domain/dataAdapters";
 import { evaluateRules } from "@/domain/evaluateRules";
-import { SCENARIOS } from "@/domain/scenarios";
+import { scenarios } from "@/domain/scenarios";
 import { askStayValidPipeline } from "@/server/ai/askPipeline";
 import { readAiConfig } from "@/server/ai/config";
 
 const { corpus } = loadCorpus();
-const scenario = SCENARIOS[0]!;
+const scenario = scenarios[1]!;
 const profile = scenario.profile;
 const asOf = "2026-08-20";
 const evaluation = evaluateRules(profile, corpus, asOf);
