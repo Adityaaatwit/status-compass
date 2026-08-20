@@ -1,514 +1,521 @@
 # Stay Valid
 
-> Turn F-1 immigration policy into dated checkpoints, clear next steps, and a
-> printable DSO meeting kit — with every item traced to an official source.
->
-> Built for the **Stellic Pathfinders Challenge**.
+**Status compass for F-1 international students.** Stay Valid turns U.S. immigration
+policy into a personal timeline, a set of checkpoints, an evidence trail, and a
+printable DSO meeting kit — without ever telling a student what their legal status
+*is*.
 
-**Educational preparation tool. Not legal advice.** Stay Valid never determines
-your immigration status and never states eligibility.
+Everything a student sees is produced by a **deterministic rules engine** running
+over a **hand-verified corpus** of primary sources. An optional AI layer can
+*explain* what the engine already found, but it can never invent a rule, a date,
+or a citation.
+
+> Educational tool only. Stay Valid is not legal advice and does not replace a
+> Designated School Official (DSO) or an immigration attorney.
 
 ---
 
 ## Table of contents
 
-1. [What it does](#what-it-does)
-2. [Tech stack](#tech-stack)
-3. [Project structure](#project-structure)
-4. [How it works](#how-it-works)
-5. [Routes and pages](#routes-and-pages)
-6. [Component inventory](#component-inventory)
-7. [Domain logic](#domain-logic)
-8. [Ask Stay Valid](#ask-stay-valid)
-9. [Optional AI layer](#optional-ai-layer)
-10. [Privacy and security](#privacy-and-security)
-11. [Tests](#tests)
-12. [Quick start](#quick-start)
-13. [Configuration](#configuration)
-14. [Status and disclaimer](#status-and-disclaimer)
+1. [What the product does](#1-what-the-product-does)
+2. [Design principles](#2-design-principles)
+3. [Tech stack](#3-tech-stack)
+4. [Getting started](#4-getting-started)
+5. [Project structure](#5-project-structure)
+6. [Data layer — the verified corpus](#6-data-layer--the-verified-corpus)
+7. [Domain layer — the deterministic engine](#7-domain-layer--the-deterministic-engine)
+8. [Application layer — routes, state, components](#8-application-layer--routes-state-components)
+9. [Ask Stay Valid — the grounded AI layer](#9-ask-stay-valid--the-grounded-ai-layer)
+10. [Privacy and security model](#10-privacy-and-security-model)
+11. [Design system](#11-design-system)
+12. [Testing and verification](#12-testing-and-verification)
+13. [Configuration reference](#13-configuration-reference)
+14. [Deployment](#14-deployment)
+15. [Extending the project](#15-extending-the-project)
 
 ---
 
-## What it does
+## 1. What the product does
 
-An F-1 student answers a handful of non-identifying questions — what their I-94
-says, their I-20 dates, where they are in their program, whether they are
-travelling. Stay Valid runs a deterministic rules engine over a versioned
-research corpus and produces:
+A student answers a short, dependency-aware intake (classification, I-94 notation,
+I-20 program dates, academic stage, OPT/STEM stage, EAD dates, travel plans,
+goals). From those answers alone the engine produces:
 
-- a **timeline** where every date says where it came from;
-- **findings** with an attention level and the reason they appeared;
-- **pathways** — topics to raise, never eligibility claims;
-- a prioritised **checklist**;
-- a **calendar export** (`.ics`);
-- a printable **DSO meeting kit**;
-- **Ask Stay Valid** — a question box that answers in plain language, from the
-  same verified sources.
+| Output | Where | What it is |
+| --- | --- | --- |
+| **At a glance** | `/plan` | Summary tiles: next deadline, items needing confirmation, corpus version, as-of date |
+| **Horizontal timeline** | `/plan` | Every derived date in chronological order, badged by kind (hard deadline, window, monitor, informational) |
+| **Findings** | `/plan` | Rule-by-rule cards: headline, plain-language explanation, student impact, attention level, citations |
+| **Pathway map** | `/plan` | Branching options (e.g. OPT → STEM OPT → H-1B, transfer, change of level) with prerequisites and risks |
+| **Action roadmap** | `/plan` | Three-column checklist grouped by urgency: confirm now / prepare / monitor |
+| **Evidence & records table** | `/plan` | Every claim mapped to its source, publisher, legal status, verification status, and retrieval date |
+| **DSO meeting kit** | `/plan` | Print-optimised agenda + question list + record checklist, with an email handoff (mail app / Outlook deep link) |
+| **Calendar export** | `/plan` | `.ics` file of all timeline dates |
+| **Research transparency** | `/sources` | Full source list, legal-status chips, candidate (not-yet-final) updates |
+| **Privacy statement** | `/privacy` | What is stored, what is sent, what is never sent |
+| **Ask Stay Valid** | `/plan` | Grounded Q&A over the retrieved rules only (see §9) |
 
-It asks for no name, no SEVIS ID, no passport number, no uploads, and keeps
-nothing after you close the tab.
+### The hard product rule
+
+Stay Valid **never adjudicates status**. Any question of the form "am I in status?",
+"will I be approved?", "is this legal for me?" is classified locally and answered
+with a referral to the DSO. Self-reported facts that would be needed to adjudicate
+(e.g. "am I maintaining status?") are surfaced as **self-reported gates** rather
+than silently trusted.
 
 ---
 
-## Tech stack
+## 2. Design principles
 
-| Layer | Technology |
+1. **Deterministic first.** Every date, deadline, and checklist item comes from
+   pure functions over JSON. Same inputs → same outputs, always, offline.
+2. **AI is an explainer, never an authority.** The AI layer receives only
+   already-retrieved rules and may only rephrase them. Its output is schema- and
+   content-validated against that context before display; anything unverifiable
+   is discarded and the deterministic answer is shown instead.
+3. **Nothing leaves the browser unless it must.** Intake answers live in
+   `sessionStorage` only. With AI disabled the app makes zero network calls.
+4. **Every claim is cited.** No UI string asserts a rule without a source ID that
+   resolves to a real primary document.
+5. **Missing input is a first-class state.** The engine reports *which* inputs are
+   missing (`missingInputKeys`) instead of guessing.
+6. **Accessible and printable.** Keyboard-navigable, semantic landmarks, visible
+   focus rings, reduced-motion respected, and a print stylesheet for the DSO kit.
+
+---
+
+## 3. Tech stack
+
+| Layer | Choice |
 | --- | --- |
-| Framework | TanStack Start v1 + TanStack Router |
-| UI library | React 19 |
-| Language | TypeScript 5.8 (strict) |
-| Build tool | Vite 8 |
-| Styling | Tailwind CSS v4 + OKLCH design tokens |
-| Components | Radix UI primitives + shadcn/ui |
-| Forms | React Hook Form + Zod |
-| Icons | Lucide React |
-| Testing | Vitest |
-| Target runtime | Cloudflare Worker via Nitro |
+| Framework | **TanStack Start v1** (React 19, SSR + server functions) |
+| Router | **TanStack Router** — file-based routes in `src/routes/` |
+| Build | **Vite 8** |
+| Language | **TypeScript 5.8**, strict |
+| Styling | **Tailwind CSS v4** via `src/styles.css` (`@theme`, OKLCH tokens) |
+| Components | **shadcn/ui** on Radix primitives, `lucide-react` icons |
+| Validation | **Zod** (corpus validation + server-function input) |
+| Data fetching | **TanStack Query** (only for the one AI endpoint) |
+| Dates | **date-fns** |
+| Tests | **Vitest** |
+| Lint/format | ESLint 9 (typescript-eslint) + Prettier |
+| Runtime target | Edge / Cloudflare Workers (`nodejs_compat`) |
 
-The AI layer added **no new runtime dependencies** — providers are called with
-`fetch`.
-
----
-
-## Project structure
-
-```
-.
-├── .env.example              # Template for optional AI keys
-├── .gitattributes            # Forces LF line endings
-├── bunfig.toml               # Bun configuration
-├── components.json           # shadcn/ui registry
-├── docs/
-│   ├── ARCHITECTURE.md       # Layer-by-layer design
-│   ├── CLAUDE_AUDIT.md       # Audit findings and change record
-│   ├── HANDOFF.md            # Run, deploy, and next-work guide
-│   └── POLICY_AUDIT.md       # Corpus questions for a legal reviewer
-├── public/                   # Static assets
-└── src/
-    ├── assets/               # Images (e.g. student-support.png)
-    ├── components/
-    │   ├── chat/             # Ask Stay Valid panel and messages
-    │   ├── illustrations/    # Custom accessible illustrations
-    │   ├── intake/           # Intake wizard and field components
-    │   ├── layout/           # Site header and footer
-    │   ├── results/          # Dashboard views (timeline, roadmap, etc.)
-    │   ├── shared/           # Badges, disclaimer, source links
-    │   ├── sources/          # Source status chips
-    │   └── ui/               # shadcn/ui components
-    ├── data/                 # Research corpus (read-only source of truth)
-    │   ├── candidate-updates.json
-    │   ├── rules.json
-    │   └── sources.json
-    ├── domain/               # Pure logic — no React, no I/O, no clock
-    │   ├── chat/             # Retrieval, safety, deterministic answers
-    │   ├── buildChecklist.ts
-    │   ├── buildMeetingKit.ts
-    │   ├── buildPathways.ts
-    │   ├── buildTimeline.ts
-    │   ├── dataAdapters.ts
-    │   ├── dataValidation.ts
-    │   ├── dateCalculations.ts
-    │   ├── evaluateRules.ts
-    │   ├── intakeQuestions.ts
-    │   ├── scenarios.ts
-    │   └── types.ts
-    ├── hooks/                # React state hooks
-    │   ├── useAskStayValid.tsx
-    │   ├── useStayValid.tsx
-    │   └── use-mobile.tsx
-    ├── lib/                  # Shared utilities
-    ├── routes/               # TanStack Start file-based routes
-    │   ├── __root.tsx        # App shell and providers
-    │   ├── check.tsx         # Intake questionnaire
-    │   ├── index.tsx         # Landing page with demo scenarios
-    │   ├── plan.tsx          # Results dashboard + chat
-    │   ├── privacy.tsx       # Privacy page
-    │   └── sources.tsx       # Source library
-    ├── rpc/
-    │   └── askStayValid.ts   # Client-callable server function stub
-    ├── server/               # Server-only code (import-protected)
-    │   └── ai/               # Provider abstraction, prompts, validation
-    ├── utils/                # Calendar export, dates, print
-    ├── router.tsx            # Router configuration
-    ├── routeTree.gen.ts      # Auto-generated (do not edit)
-    ├── server.ts             # Server entry
-    ├── start.ts              # Start configuration
-    └── styles.css            # Design tokens and global styles
-```
-
-`src/server/**` cannot be imported from client code — the framework's
-import-protection plugin denies it. That is why the server function lives in
-`src/rpc/` and the implementation in `src/server/ai/`.
+No database. No auth. No analytics. No tracking.
 
 ---
 
-## How it works
-
-### The corpus is the source of truth
-
-Three JSON files under `src/data/`, never edited by code:
-
-| File | Role |
-| --- | --- |
-| `sources.json` | Official documents — Federal Register, USCIS, eCFR, DHS, university guidance — with tier, legal status, verified claims, and when each was last checked |
-| `rules.json` | Rules with predicates, date formulas, findings, pathways, and the source IDs backing them |
-| `candidate-updates.json` | Unverified developments (litigation, rulemaking). **Watchlist only — these can never activate a rule.** |
-
-Adapters normalise them once at load. Validation reports whether they are usable
-and never repairs them: when data is unavailable the UI says so rather than
-inventing content.
-
-### The engine is a pure function
-
-```ts
-evaluateRules(profile, corpus, asOfDate) => EvaluationResult
-```
-
-The clock is never read inside it — `asOfDate` is captured once per session and
-threaded through. The same profile, corpus and date always produce byte-identical
-output, which is asserted by test.
-
-Non-negotiables it enforces:
-
-- Only verified rules generate findings; candidate updates never do.
-- Missing information produces an explicit insufficient-information state, never
-  a guess.
-- Publication is not proof a rule is in force — scheduled effective dates are
-  marked *needs confirmation*, not *official*.
-- A rule that is not yet in force can never be shown as "confirm now", and can
-  never emit an official deadline.
-- Visa expiry, I-20 program end, EAD expiry and I-94 admit-until are four
-  different dates and stay four different dates.
-
-### Every date says what kind of date it is
-
-| Badge | Meaning |
-| --- | --- |
-| **Official date** | Stated or computed from a government source that is in force |
-| **From your document** | You typed it off your own paperwork |
-| **Stay Valid reminder** | A preparation prompt — *not* a government deadline |
-| **Needs confirmation** | Depends on a rule not yet in force, or one that is uncertain |
-
-This survives into the `.ics` export, so a checkpoint you read months later out
-of context still tells you what it is.
-
-### Your own answer is never treated as a determination
-
-Asked *"has anyone told you there is a problem with your F-1 status?"*, a student
-can honestly answer **"I'm not sure"** — and should be able to.
-
-Now:
-
-- answer "no problem that I know of" → the rule appears, **labelled as resting on
-  your own answer**, with the caveat that only a DSO can confirm it;
-- any other answer → an explicit *"only your DSO can answer this"* note, so you
-  can see the topic was held back rather than ruled out.
-
----
-
-## Routes and pages
-
-| URL | File | Purpose |
-| --- | --- | --- |
-| `/` | `src/routes/index.tsx` | Landing page, how it works, demo scenario cards |
-| `/check` | `src/routes/check.tsx` | Privacy-first intake questionnaire; supports `focus` deep-links from results |
-| `/plan` | `src/routes/plan.tsx` | Full results dashboard with timeline, findings, pathways, chat, and meeting kit |
-| `/sources` | `src/routes/sources.tsx` | Complete source library and candidate-update watchlist |
-| `/privacy` | `src/routes/privacy.tsx` | Privacy-by-design disclosure |
-
-`routeTree.gen.ts` is generated automatically. Do not edit it.
-
----
-
-## Component inventory
-
-### Layout
-
-| Component | Location | Purpose |
-| --- | --- | --- |
-| `SiteHeader` | `src/components/layout/SiteHeader.tsx` | Top navigation, "Clear my information" action |
-| `SiteFooter` | `src/components/layout/SiteFooter.tsx` | Footer links and notices |
-
-### Intake
-
-| Component | Location | Purpose |
-| --- | --- | --- |
-| `IntakeWizard` | `src/components/intake/IntakeWizard.tsx` | Goal-driven multi-step questionnaire |
-| `Field` | `src/components/intake/Field.tsx` | Reusable form field wrapper |
-
-### Results dashboard (`/plan`)
-
-| Component | Location | Purpose |
-| --- | --- | --- |
-| `AtAGlance` | `src/components/results/AtAGlance.tsx` | Top summary tiles: attention level, next checkpoint, action count |
-| `HorizontalTimeline` | `src/components/results/HorizontalTimeline.tsx` | Scrollable chronological milestone view |
-| `ActionRoadmap` | `src/components/results/ActionRoadmap.tsx` | Three-column grouping: Do Now, Prepare Next, Monitor |
-| `PathwayMap` | `src/components/results/PathwayMap.tsx` | Visual card-based pathways to discuss with a DSO |
-| `FindingCard` | `src/components/results/FindingCard.tsx` | Expandable rule findings with attention level and reasoning |
-| `EvidenceTable` | `src/components/results/EvidenceTable.tsx` | Responsive table of sources backing the findings |
-| `MeetingKitView` | `src/components/results/MeetingKitView.tsx` | Print-optimised one-page DSO meeting summary |
-
-### Ask Stay Valid chat
-
-| Component | Location | Purpose |
-| --- | --- | --- |
-| `AskStayValid` | `src/components/chat/AskStayValid.tsx` | Chat panel with input, disclosure, and message list |
-| `ChatMessageView` | `src/components/chat/ChatMessageView.tsx` | Individual user/assistant message rendering |
-| `ChatSourceCard` | `src/components/chat/ChatSourceCard.tsx` | Source cards shown under assistant answers |
-
-### Shared
-
-| Component | Location | Purpose |
-| --- | --- | --- |
-| `AttentionBadge` | `src/components/shared/AttentionBadge.tsx` | `confirm_now`, `prepare`, `monitor`, `information` indicators |
-| `DateKindBadge` | `src/components/shared/DateKindBadge.tsx` | `official`, `document`, `reminder`, `needs_confirmation` indicators |
-| `Disclaimer` | `src/components/shared/Disclaimer.tsx` | Legal and educational notices |
-| `InsufficientInfo` | `src/components/shared/InsufficientInfo.tsx` | Missing-input recovery with deep-links to `/check` |
-| `SourceLink` | `src/components/shared/SourceLink.tsx` | External source link with accessible new-tab hint |
-| `LegalStatusChip` | `src/components/sources/LegalStatusChip.tsx` | Verification status chips |
-
-### Illustrations
-
-| Component | Location | Purpose |
-| --- | --- | --- |
-| `StudentSupportIllustration` | `src/components/illustrations/StudentSupportIllustration.tsx` | Hand-drawn human illustration used on the home page and support sections |
-
----
-
-## Domain logic
-
-All files under `src/domain/` are pure: no React, no I/O, no clock reads.
-
-| Module | Responsibility |
-| --- | --- |
-| `types.ts` | Core corpus, profile, and result types |
-| `evaluateRules.ts` | Pure rules engine: `(profile, corpus, asOfDate) -> EvaluationResult` |
-| `dateCalculations.ts` | ISO-8601 date math, leap-year and DST-safe |
-| `dataAdapters.ts` | Normalise raw JSON into typed records; strip citation markers from display text |
-| `dataValidation.ts` | Report corpus usability without rewriting |
-| `buildTimeline.ts` | Merge document dates, official deadlines, and reminders into one chronology |
-| `buildPathways.ts` | Generate topic cards from findings |
-| `buildChecklist.ts` | Produce prioritised actions from findings and dates |
-| `buildMeetingKit.ts` | Build the printable DSO meeting summary |
-| `intakeQuestions.ts` | Registry mapping student goals to required questions |
-| `scenarios.ts` | Four demonstration personas |
-
-### Chat domain (`src/domain/chat/`)
-
-| Module | Responsibility |
-| --- | --- |
-| `chatTypes.ts` | Shared chat types |
-| `safety.ts` | Question classification into safety categories |
-| `identifierDetection.ts` | Block messages that may contain SEVIS, passport, visa, A-numbers, etc. |
-| `normalizeQuestion.ts` | Normalise spelling and punctuation before retrieval |
-| `retrieveVerifiedContext.ts` | Ranked retrieval over verified rules and sources only |
-| `buildDeterministicAnswer.ts` | Build a grounded answer from corpus wording, no AI |
-
----
-
-## Ask Stay Valid
-
-A free-text question box on your results page. Type a question in your own
-words — *"how could the September 15 rule affect someone already admitted for
-D/S?"*, *"what should I discuss with my DSO before traveling?"*, *"why is my
-program end date important?"*
-
-The timeline stays the centre of the product. This explains what you have just
-read; it does not replace it.
-
-**How a question is handled:**
-
-```
-1. Classified locally      — some questions get reviewed wording, never a model
-2. Identifiers detected    — a message that looks like it holds one is not sent
-3. Retrieved locally       — verified rules and sources only, capped and ranked
-4. Answered deterministically — quoting the corpus's own approved wording
-5. Optionally rephrased    — only if AI is on, you have agreed, and it can help
-```
-
-Step 4 completes **before** any network call, so every failure path is already
-covered and you are never shown an error instead of an answer.
-
-**Questions that never reach a model, in any configuration:**
-
-| You ask | You get |
-| --- | --- |
-| "Am I still in status?" | A refusal to determine status, and a pointer to your DSO |
-| "Should I leave the country?" | A decline to advise, and a pointer to an attorney |
-| "I was detained at the airport" | Immediate escalation to your DSO and an attorney |
-| "How do I get a green card?" | An honest out-of-scope answer |
-| Something the corpus does not cover | An explicit insufficient-evidence answer |
-
-**Also:** free-text input with Enter to send and Shift+Enter for a newline;
-loading, retry and quota-unavailable states; clear-conversation; source cards
-showing legal status and last-checked date; suggested follow-ups drawn from the
-corpus's own DSO questions; an "ask your DSO" escalation on every answer; and a
-standing warning never to type a passport, SEVIS, visa, A-number or receipt
-number. Every answer states its origin — *quoted from verified sources* or
-*explained by AI from verified sources* — so you always know which you have.
-
----
-
-## Optional AI layer
-
-Provider order: **Gemini → Groq → deterministic.**
-
-Enable it by copying `.env.example` to `.env` (or `.dev.vars` for wrangler) and
-setting `AI_CHAT_ENABLED=true` with at least one key. Both files are gitignored.
-
-For production on Cloudflare:
-
-```bash
-npx wrangler secret put GEMINI_API_KEY
-```
-
-Full variable reference and deployment steps: [`docs/HANDOFF.md`](docs/HANDOFF.md).
-
-### What is sent, and what is not
-
-**Sent:** your question; a few non-identifying profile fields (I-94 notation,
-academic stage, OPT stage, travel planned, and *whether* a program-end or EAD
-date exists — **not the dates**); the small set of matching verified rules with
-dates the engine already calculated; limited source metadata; up to six recent
-messages.
-
-**Never sent:** the full corpus; any candidate update; any identifier; any API
-key. Keys live only on the server — verified against the built output, the client
-bundle contains zero occurrences of either key name, either provider hostname,
-the auth headers, or the system prompt.
-
-### The AI cannot decide anything
-
-Every provider answer is validated *after* it returns, because structured output
-guarantees formatting and not truthfulness. An answer is **discarded** and
-replaced with the plain sourced version if it:
-
-- cites a source ID that was not supplied;
-- states a date that was not in the supplied context (a fabricated deadline);
-- asserts status, eligibility, legality, or a predicted outcome;
-- advises you to leave, stay, or re-enter the United States.
-
-It also cannot lower the "confirm with your DSO" flag, and cannot reclassify its
-way out of a blocked category.
-
-### Quota protection
-
-Capped question length, context, history and output; request timeout; at most one
-retry; exponential backoff with jitter; a circuit breaker; duplicate-submission
-suppression; per-client rate limiting. The fallback provider is used **only** on a
-temporary failure — never on a safety refusal, which would turn it into a way to
-shop for a permissive model. No AI call happens on page load.
-
----
-
-## Privacy and security
-
-- No account, no login, no uploads.
-- No name, date of birth, SEVIS ID, passport, visa, A-number or receipt number is
-  ever requested — and the chat refuses to send a message that looks like it
-  contains one.
-- Your evaluation runs in your browser. Nothing is written to `localStorage`,
-  cookies, or a server.
-- "Clear my information" erases your answers **and** the chat conversation
-  immediately. So does closing the tab.
-- With AI enabled, you see a disclosure and must acknowledge it before the first
-  AI-assisted answer. The provider processes that request under its own policy.
-- Stay Valid does not intentionally store conversations, and does not log
-  question text or profile dates.
-
-Full detail on the in-app privacy page and in
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-
----
-
-## Tests
-
-```bash
-npm run test
-```
-
-258 tests across 12 files. Every provider call is mocked; **no test consumes API
-credits.**
-
-Coverage includes determinism, activation gating and date boundaries; leap years
-and DST independence; D/S versus fixed-date admission; OPT and STEM OPT; travel;
-candidate updates never activating a rule; retrieval relevance and candidate
-exclusion; every safety category; identifier detection *and* non-detection
-("60 days" and "$350 SEVIS fee" must not trip it); provider timeouts, 429s, 5xx,
-malformed output, invented source IDs and fabricated deadlines; correct and
-incorrect fallback triggers; RFC 5545 calendar correctness; and assertions that
-no answer — deterministic or AI — ever states a legal conclusion.
-
----
-
-## Quick start
+## 4. Getting started
 
 ```bash
 npm install
+npm run dev          # http://localhost:8080
 ```
+
+Optional AI layer:
 
 ```bash
-npm run dev
+cp .env.example .env   # then paste a GEMINI_API_KEY and/or GROQ_API_KEY
 ```
 
-Open `http://localhost:8080`. No configuration required.
+Scripts:
 
-| Script | Does |
+| Command | Purpose |
 | --- | --- |
-| `npm run dev` | Dev server |
-| `npm run build` | Production build (Cloudflare Worker via Nitro) |
+| `npm run dev` | Dev server with HMR |
+| `npm run build` | Production build |
 | `npm run preview` | Serve the production build |
-| `npm run test` | Vitest, once |
-| `npm run test:watch` | Vitest, watch mode |
+| `npm test` | Vitest, single run |
+| `npm run test:watch` | Vitest, watch |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint + Prettier |
-| `npm run verify` | typecheck → lint → test → build |
-
-The canonical lockfile is `bun.lock`; `package-lock.json` is gitignored so it
-cannot compete. `.gitattributes` forces LF line endings — without it a Windows
-checkout produces thousands of spurious Prettier errors.
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier write |
+| `npm run verify` | typecheck → lint → test → build (the release gate) |
 
 ---
 
-## Configuration
+## 5. Project structure
 
-### Optional AI environment variables
+```
+src/
+├── data/                          # the verified corpus (JSON, source of truth)
+│   ├── rules.json                 # 8 F-1 rules, versioned + researched-as-of
+│   ├── sources.json               # 18 primary sources with legal status
+│   └── candidate-updates.json     # 3 proposed/not-final changes, kept separate
+│
+├── domain/                        # pure TypeScript. no React, no I/O
+│   ├── types.ts                   # every domain type (corpus, profile, results)
+│   ├── dataValidation.ts          # Zod validation of the corpus at load
+│   ├── dataAdapters.ts            # loadCorpus(), citation-marker stripping, lookups
+│   ├── dateCalculations.ts        # grace periods, windows, day math
+│   ├── evaluateRules.ts           # THE engine: profile + corpus → EvaluationResult
+│   ├── buildTimeline.ts           # findings → ordered TimelineItem[]
+│   ├── buildPathways.ts           # findings → PathwayCard[]
+│   ├── buildChecklist.ts          # findings → ChecklistAction[] by urgency
+│   ├── buildMeetingKit.ts         # findings → MeetingKit (agenda, questions, records)
+│   ├── intakeQuestions.ts         # dependency-aware question registry
+│   ├── scenarios.ts               # canonical demo profiles
+│   └── chat/                      # browser-safe chat logic
+│       ├── chatTypes.ts
+│       ├── safety.ts              # question classification + AI block list
+│       ├── identifierDetection.ts # PII / identifier detection (SEVIS, A#, SSN…)
+│       ├── normalizeQuestion.ts
+│       ├── retrieveVerifiedContext.ts   # local retrieval over the corpus
+│       └── buildDeterministicAnswer.ts  # answer with zero AI
+│
+├── server/ai/                     # server-only. marked, never bundled to client
+│   ├── config.ts                  # env reading, clamped limits, provider choice
+│   ├── prompt.ts                  # the grounded system prompt
+│   ├── provider.ts                # AiChatProvider contract + shareable payload types
+│   ├── geminiProvider.ts          # Gemini implementation
+│   ├── groqProvider.ts            # Groq implementation
+│   ├── outputSchema.ts            # schema + grounding validation of model output
+│   ├── errors.ts                  # AiError taxonomy, fallback eligibility
+│   ├── rateLimit.ts               # per-client limits, dedupe, circuit breaker
+│   └── askPipeline.ts             # orchestration (classify → retrieve → answer)
+│
+├── rpc/askStayValid.ts            # the ONLY network endpoint (createServerFn)
+│
+├── routes/                        # file-based routes
+│   ├── __root.tsx                 # shell: header, footer, Toaster, base head tags
+│   ├── index.tsx                  # landing page
+│   ├── check.tsx                  # intake wizard
+│   ├── plan.tsx                   # the dashboard
+│   ├── sources.tsx                # research transparency
+│   └── privacy.tsx                # privacy statement
+│
+├── hooks/
+│   ├── useStayValid.tsx           # profile + evaluation context, sessionStorage
+│   ├── useAskStayValid.tsx        # chat state machine
+│   └── use-mobile.tsx
+│
+├── components/
+│   ├── intake/                    # IntakeWizard, Field
+│   ├── results/                   # AtAGlance, HorizontalTimeline, FindingCard,
+│   │                              # PathwayMap, ActionRoadmap, EvidenceTable,
+│   │                              # MeetingKitView (incl. SendToDso)
+│   ├── chat/                      # AskStayValid, ChatMessageView, ChatSourceCard
+│   ├── shared/                    # AttentionBadge, DateKindBadge, Disclaimer,
+│   │                              # InsufficientInfo, SourceLink
+│   ├── sources/LegalStatusChip.tsx
+│   ├── illustrations/             # hand-drawn student support artwork
+│   └── ui/                        # shadcn/ui primitives
+│
+├── utils/                         # calendarExport (.ics), dateFormatting, print
+└── styles.css                     # Tailwind v4 theme + OKLCH design tokens
+```
 
-| Variable | Default | Purpose |
+---
+
+## 6. Data layer — the verified corpus
+
+Three JSON files, each stamped with `corpusVersion` and `researchedAsOf`.
+
+**`sources.json` — 18 records.** Each source carries:
+
+- `id`, `title`, `publisher`, `url`, `retrievedAt`
+- `legalStatus` — e.g. statute / regulation / agency guidance / policy manual / proposed rule
+- `verificationStatus` — how the claim was checked
+- `verifiedClaims[]` — the exact statements this source is allowed to support
+
+**`rules.json` — 8 F-1 rules.** Each rule carries a headline, plain-language
+explanation, student impact, `attention` level, `confirmationNeeded[]`,
+`calculations[]` (the date math the engine must run), `pathways[]`, `findings[]`
+conditions, and `sourceIds[]`.
+
+**`candidate-updates.json` — 3 entries.** Proposed or not-yet-effective changes are
+deliberately stored *outside* the rule set so they can be shown as "monitor" items
+without ever affecting a deadline.
+
+At load, `validateCorpus()` (Zod) checks shape, cross-references every `sourceId`,
+and reports problems instead of throwing — a malformed corpus degrades the UI, it
+does not crash it. `stripCitationMarkers()` removes inline research markers from
+display text while the structured `sourceIds` remain intact for citation UI.
+
+---
+
+## 7. Domain layer — the deterministic engine
+
+### Contract
+
+```ts
+evaluateRules(profile: StudentProfile, corpus: Corpus, asOfDate: string): EvaluationResult
+```
+
+Pure, synchronous, no I/O. `asOfDate` is injected rather than read from the clock,
+so every test and every snapshot is reproducible.
+
+### `EvaluationResult` contains
+
+- `findings: Finding[]` — matched rules with derived dates and attention level
+- `derivedDates: DerivedDate[]` — each with `kind` (`hard_deadline`, `window_open`,
+  `window_close`, `monitor`, `informational`), label, and originating rule
+- `selfReportedGates: SelfReportedGate[]` — conclusions that depend on an unverified
+  self-report; shown as gates, never resolved silently
+- `insufficientInfo: InsufficientInfoNote[]` with `reason` = `missing_input` or
+  `self_reported_gate`
+- `missingInputKeys: string[]` — drives the intake to ask exactly what is missing
+- corpus provenance (`corpusVersion`, `researchedAsOf`)
+
+### Builders
+
+`buildTimeline`, `buildPathways`, `buildChecklist`, and `buildMeetingKit` are all
+pure functions of `EvaluationResult`. They add no policy knowledge — they only
+reshape engine output for a specific surface. That separation is why the print kit,
+the `.ics` export, and the dashboard can never disagree with each other.
+
+### Date logic
+
+`dateCalculations.ts` holds all day math: 60-day grace period, 30-day pre-start
+entry window, 90-day pre-completion OPT filing window, 60-day post-completion
+window, STEM extension timing, and duration-of-status vs fixed-date I-94 handling.
+It is unit-tested independently of the rules.
+
+---
+
+## 8. Application layer — routes, state, components
+
+### Routes
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Landing page: what the tool does, what it refuses to do, entry to the check |
+| `/check` | Dependency-aware intake wizard; only asks questions the engine needs |
+| `/plan` | The dashboard: at-a-glance, timeline, findings, pathways, roadmap, evidence, meeting kit, Ask Stay Valid |
+| `/sources` | Every source with legal status + the candidate-updates watchlist |
+| `/privacy` | Plain-language privacy statement |
+
+Each leaf route defines its own `head()` with a unique title, description, and
+Open Graph / Twitter metadata.
+
+### State
+
+`useStayValid` is a React context holding the profile, the evaluation, and the
+`asOfDate`. It persists to `sessionStorage` (not `localStorage`) so closing the tab
+clears the session. Re-running the intake resets the chat session too, so an answer
+can never be shown against a stale profile.
+
+### Intake
+
+`intakeQuestions.ts` is a registry: each question declares its key, type, options,
+and a `dependsOn` predicate. The wizard renders only relevant questions, and the
+engine's `missingInputKeys` closes the loop — if a rule needs an input, the intake
+asks for it; if it does not, the student never sees it.
+
+### Key result components
+
+- **`AtAGlance`** — the four tiles a student reads first
+- **`HorizontalTimeline`** — scrollable, badged by `DateKind`, keyboard reachable
+- **`FindingCard`** — headline, explanation, impact, confirmations, citations
+- **`PathwayMap`** — branch cards with prerequisites, risks, and required actions
+- **`ActionRoadmap`** — confirm-now / prepare / monitor columns
+- **`EvidenceTable`** — claim → source → legal status → retrieved date
+- **`MeetingKitView`** — print layout plus `SendToDso`: builds a plain-text agenda
+  and opens the device mail app or an Outlook web deep link. No email is ever sent
+  from the server, and no address is stored.
+
+---
+
+## 9. Ask Stay Valid — the grounded AI layer
+
+The AI layer is **optional and inert by default**. Every other feature works with
+it fully disabled.
+
+### Pipeline (`src/server/ai/askPipeline.ts`)
+
+```
+question
+  │
+  ├─ 1. classifyQuestion()      local; blocked categories never reach a provider
+  ├─ 2. retrieveVerifiedContext()  local retrieval over the corpus only
+  ├─ 3. buildDeterministicAnswer() built FIRST — it is the return value by default
+  ├─ 4. primary provider (1 retry, temporary failures only) → fallback provider
+  └─ 5. validateGroundedOutput()  schema + grounding check against the sent context
+                                  fail → the step-3 answer is returned
+```
+
+Because the deterministic answer exists before the first network call, **there is
+no failure path where the student sees an error instead of content**. Reasons for
+falling back are logged coarsely (`ai_disabled`, `no_key`, `blocked_category`,
+`insufficient_evidence`, `circuit_open`, `provider_failed`, `validation_failed`) —
+never with question text, profile dates, or answer bodies.
+
+### What may leave the machine
+
+Defined exhaustively by `GroundedChatInput` in `server/ai/provider.ts`:
+
+- the question (truncated to `maxQuestionChars`)
+- a **`ShareableProfile`**: I-94 notation, academic stage, OPT stage, travel flag,
+  and *booleans* for whether a program-end / EAD-end date exists — never the dates
+- the **retrieved rules only**, with dates the engine already derived
+- source metadata and `verifiedClaims` for citation
+- the last N messages (default 6), not the conversation
+- the locally computed safety category
+
+The full corpus, the candidate updates, the full profile, and the full chat history
+are never sent.
+
+### Output validation (`outputSchema.ts`)
+
+A model response is accepted only if it parses to the expected shape **and**:
+
+- every `sourceId` was in the supplied set
+- every date in the prose appears in the context that was sent
+- the safety category matches the local classification (the model cannot upgrade
+  itself from "referral" to "answer")
+
+Anything else is dropped in favour of the deterministic answer.
+
+### Providers
+
+| Slot | Default model | Notes |
 | --- | --- | --- |
-| `AI_CHAT_ENABLED` | `false` | Master switch; must be exactly `true` |
+| Primary | `gemini-3.6-flash` | thinking level capped to `low` |
+| Fallback | `openai/gpt-oss-20b` (Groq) | `reasoning_effort: "low"` |
+
+Reasoning is capped because unbounded thinking tokens consumed the output budget
+and truncated the JSON payload. Budgets: `maxOutputTokens` 1600,
+`timeoutMs` 30 000 — both clamped in code so a bad env value cannot drain a free
+tier. Fallback fires **only** on temporary errors (timeout, 429, 5xx); a bad or
+untrustworthy answer does not earn a second provider call with the same prompt.
+
+### Abuse controls (`rateLimit.ts`)
+
+In-memory, per isolate: per-client request limits, duplicate-question detection via
+a non-reversible fingerprint, and a circuit breaker that stops calling a failing
+provider. The client IP is used only as a bucket key — never stored, logged, or
+attached to a question.
+
+---
+
+## 10. Privacy and security model
+
+- **Storage:** intake answers in `sessionStorage` only. No cookies, no accounts,
+  no database, no server-side persistence of anything.
+- **Network:** exactly one endpoint (`src/rpc/askStayValid.ts`). With AI disabled
+  the browser makes no request at all.
+- **Identifier blocking:** `identifierDetection.ts` catches SEVIS IDs, A-numbers,
+  SSNs, passport numbers, and similar patterns. Enforced **twice** — in the browser
+  before sending, and again on the server, because a request can be made without
+  the browser.
+- **Server-only enforcement by the build:** every module under `src/server/ai/`
+  imports `@tanstack/react-start/server-only`, and the RPC handler imports them
+  *dynamically inside the handler*, so an API key reaching the client bundle is a
+  build failure rather than a review miss.
+- **Key exposure:** `getAiStatus` returns a single boolean — no provider name, no
+  model, no key fragment.
+- **Input validation:** the request body is Zod-parsed server-side with absolute
+  ceilings (4000-char question, 20-message history) independent of any env config.
+- **Prompt-injection posture:** retrieval and evaluation are re-run on the server;
+  client-supplied context is never trusted into the prompt.
+
+---
+
+## 11. Design system
+
+Tailwind v4 with all colour, gradient, and shadow values defined as **semantic
+OKLCH tokens** in `src/styles.css`. Components reference tokens
+(`bg-card`, `text-muted-foreground`, `border-warning`) — never hardcoded colours —
+so theming and dark mode hold throughout.
+
+Semantic layers include surface/card/muted, plus attention colours mapped to the
+domain: `confirm_now`, `prepare`, `monitor`, `information`. Badges
+(`AttentionBadge`, `DateKindBadge`, `LegalStatusChip`) are the only places those
+colours are interpreted, which keeps urgency visually consistent everywhere.
+
+Accessibility: semantic landmarks and one `<h1>` per page, labelled form controls
+with inline error text, visible focus rings, `aria-live` regions for chat status,
+reduced-motion honoured, and decorative illustrations marked
+`aria-hidden`/described where meaningful.
+
+---
+
+## 12. Testing and verification
+
+Vitest covers the parts where a mistake would be invisible in the UI:
+
+| Suite | Covers |
+| --- | --- |
+| `dateCalculations.test.ts` | grace periods, windows, boundary days, leap years |
+| `evaluateRules.test.ts` | rule matching, derived dates, attention levels |
+| `scenarioBehaviour.test.ts` | end-to-end expectations for each canonical profile |
+| `selfReportedGates.test.ts` | the engine never adjudicates a self-reported fact |
+| `dataAdapters.test.ts` | corpus load, validation, citation stripping, lookups |
+| `safety.test.ts` | classification and the AI block list |
+| `identifierDetection.test.ts` | PII patterns and false-positive guards |
+| `retrieveVerifiedContext.test.ts` | retrieval relevance and context budget |
+| `buildDeterministicAnswer.test.ts` | AI-free answers stay grounded and cited |
+| `askPipeline.test.ts` | retry, fallback eligibility, validation rejection paths |
+| `rateLimit.test.ts` | limits, dedupe, circuit breaker |
+| `calendarExport.test.ts` | `.ics` structure and escaping |
+
+Release gate:
+
+```bash
+npm run verify   # typecheck → lint → test → production build
+```
+
+Live providers were additionally smoke-tested end-to-end: one grounded answer per
+provider with `origin: "gemini"` and `origin: "groq"`, citations resolved, no
+fallback triggered.
+
+---
+
+## 13. Configuration reference
+
+All variables are optional. See `.env.example` for the annotated version.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `AI_CHAT_ENABLED` | `true` | Set to exactly `false` to disable the AI layer |
 | `AI_PROVIDER` | `gemini` | Primary provider |
-| `AI_FALLBACK_PROVIDER` | none | Used only on timeout/429/5xx |
-| `GEMINI_API_KEY` | — | Secret |
-| `GEMINI_MODEL` | `gemini-2.0-flash` | |
-| `GROQ_API_KEY` | — | Secret |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` | |
-| `AI_MAX_QUESTION_CHARS` | `1200` | |
-| `AI_MAX_CONTEXT_CHARS` | `12000` | |
-| `AI_MAX_HISTORY_MESSAGES` | `6` | |
-| `AI_MAX_OUTPUT_TOKENS` | `600` | |
-| `AI_TIMEOUT_MS` | `15000` | |
+| `AI_FALLBACK_PROVIDER` | `groq` | Used only on temporary primary failures |
+| `GEMINI_API_KEY` | — | Without it the Gemini slot is inert |
+| `GEMINI_MODEL` | `gemini-3.6-flash` | |
+| `GROQ_API_KEY` | — | Without it the Groq slot is inert |
+| `GROQ_MODEL` | `openai/gpt-oss-20b` | |
+| `AI_MAX_QUESTION_CHARS` | `1200` | Clamped 40–4000 |
+| `AI_MAX_CONTEXT_CHARS` | `12000` | Clamped 500–40 000; whole rules dropped to fit |
+| `AI_MAX_HISTORY_MESSAGES` | `6` | Clamped 0–20 |
+| `AI_MAX_OUTPUT_TOKENS` | `1600` | Clamped 100–4000 |
+| `AI_TIMEOUT_MS` | `30000` | Clamped 1000–60 000 |
 
-All numeric values are clamped in code, so a typo cannot empty a free tier.
-
----
-
-## Status and disclaimer
-
-The research corpus is self-declared
-`research_draft_requires_human_review`, and every rule carries
-`humanReviewRequired: true`. The engineering work verifies that the product
-handles the corpus *honestly* — it does not verify that the corpus is *correct*.
-
-**A qualified immigration professional must review `rules.json` before this is
-presented to students as usable guidance.** Open questions are itemised in
-[`docs/POLICY_AUDIT.md`](docs/POLICY_AUDIT.md).
+With no keys set, the app is fully functional and fully offline: the timeline,
+checkpoints, pathways, checklist, calendar export, and DSO meeting kit never call a
+provider under **any** configuration.
 
 ---
 
-## Disclaimer
+## 14. Deployment
 
-Stay Valid is an educational planning tool, not legal advice. It does not
-determine immigration status and is not a substitute for a Designated School
-Official or a qualified immigration attorney. Always verify deadlines and
-requirements with your DSO and the official government sources it links to.
+Built for an edge runtime (Cloudflare Workers with `nodejs_compat`). Everything is
+bundled at build time — there is no runtime module resolution, and no Node-only
+package (`sharp`, `child_process`, native addons) may be introduced into a server
+function.
+
+Secrets are supplied as environment variables / worker secrets, read **inside**
+handlers (never at module scope) so injection timing is correct.
+
+Live: **https://stay-valid.lovable.app**
+
+---
+
+## 15. Extending the project
+
+**Add a rule.** Add its sources to `sources.json` with `verifiedClaims`, add the
+rule to `rules.json` with `calculations`, `pathways`, and `sourceIds`, then add a
+case to `evaluateRules.test.ts` and a scenario expectation. No component changes
+are needed — every surface derives from the engine.
+
+**Add an intake question.** Register it in `intakeQuestions.ts` with its
+`dependsOn` predicate and add the field to `StudentProfile`; the wizard and the
+`missingInputKeys` loop pick it up automatically.
+
+**Add an AI provider.** Implement `AiChatProvider` in `src/server/ai/`, add the key
+and model to `config.ts`, and register it in `resolveProvider()`. The pipeline,
+validation, breaker, and fallback logic need no changes.
+
+**Non-negotiables when changing this codebase.** Keep the domain layer pure and
+free of React. Keep the deterministic answer built before any provider call. Never
+widen `GroundedChatInput`. Never remove the double identifier check. Never let a
+rule assertion ship without a resolving `sourceId`.
