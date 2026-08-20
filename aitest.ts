@@ -22,6 +22,15 @@ for (const provider of ["groq"] as const) {
       try {
         return await inner.generateGroundedAnswer(input);
       } catch (e) {
+        const { SYSTEM_PROMPT, buildContextText, buildUserPrompt } = await import("@/server/ai/prompt");
+        const up = buildUserPrompt(input, buildContextText(input));
+        const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { "content-type": "application/json", authorization: `Bearer ${base.groq.apiKey}` },
+          body: JSON.stringify({ model: base.groq.model, temperature: 0.2, max_tokens: base.limits.maxOutputTokens, reasoning_effort: "low", response_format: { type: "json_object" }, messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: up }] }),
+        });
+        const j = (await r.json()) as any;
+        console.log("safety", input.safetyCategory, "rules", input.rules.length, "status", r.status, JSON.stringify(j).slice(0, 600));
         console.log("ERR", (e as { kind?: string }).kind, (e as Error).message);
         throw e;
       }
