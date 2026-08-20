@@ -73,8 +73,10 @@ export const DEFAULT_LIMITS: AiLimits = {
 };
 
 export function readAiConfig(): AiConfig {
-  const provider = readProvider("AI_PROVIDER", "gemini") ?? "gemini";
-  const fallbackProvider = readProvider("AI_FALLBACK_PROVIDER", null);
+  // Groq leads because its free tier is the more forgiving of the two; Gemini
+  // covers the case where Groq is rate-limited or unavailable.
+  const provider = readProvider("AI_PROVIDER", "groq") ?? "groq";
+  const fallbackProvider = readProvider("AI_FALLBACK_PROVIDER", "gemini");
 
   return {
     enabled: readEnv("AI_CHAT_ENABLED").toLowerCase() === "true",
