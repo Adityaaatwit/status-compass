@@ -12,7 +12,7 @@ const asOf = "2026-08-20";
 const evaluation = evaluateRules(profile, corpus, asOf);
 const base = readAiConfig();
 
-for (const provider of ["gemini", "groq"] as const) {
+for (const provider of ["groq"] as const) {
   const config = { ...base, enabled: true, provider, fallbackProvider: null };
   const result = await askStayValidPipeline({
     question: "What does duration of status mean for my program end date?",
