@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CalendarClock, FileSearch, ScrollText, ShieldCheck } from "lucide-react";
 
+import { StudentSupportIllustration } from "@/components/illustrations/StudentSupportIllustration";
 import { AttentionBadge } from "@/components/shared/AttentionBadge";
 import { DateKindBadge } from "@/components/shared/DateKindBadge";
 import { Disclaimer, EducationalNotice } from "@/components/shared/Disclaimer";
