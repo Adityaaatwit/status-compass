@@ -163,7 +163,12 @@ const REQUIRED_INPUT_RESOLVERS: Record<
   },
   dsoOptRecommendationDate: {
     label: "Date your DSO entered the OPT recommendation",
-    get: (p) => p.dsoOptRecommendationDate ?? (p.optStage === "preparing" ? "not_yet" : null),
+    // A student who has not yet been recommended cannot supply this date, and
+    // must not be blocked for it. "not_yet" is an answer, not a guess: no
+    // deadline is computed from it.
+    get: (p) =>
+      p.dsoOptRecommendationDate ??
+      (p.optStage === "preparing" || p.optStage === "none" ? "not_yet" : null),
   },
   plannedDepartureDate: { label: "Planned departure date", get: (p) => p.plannedDepartureDate },
   expectedReentryDate: { label: "Expected reentry date", get: (p) => p.expectedReentryDate },
@@ -181,15 +186,20 @@ const REQUIRED_INPUT_RESOLVERS: Record<
   },
 };
 
+/** The raw requiredInputs keys a rule is still waiting on. */
+function missingInputKeys(rule: RuleRecord, profile: StudentProfile): string[] {
+  return rule.requiredInputs.filter((input) => {
+    const resolver = REQUIRED_INPUT_RESOLVERS[input];
+    if (!resolver) return false; // unknown inputs are not treated as blocking
+    const value = resolver.get(profile);
+    return value === null || value === undefined || value === "" || value === "unknown";
+  });
+}
+
 function missingInputs(rule: RuleRecord, profile: StudentProfile): string[] {
-  return rule.requiredInputs
-    .filter((input) => {
-      const resolver = REQUIRED_INPUT_RESOLVERS[input];
-      if (!resolver) return false; // unknown inputs are not treated as blocking
-      const value = resolver.get(profile);
-      return value === null || value === undefined || value === "" || value === "unknown";
-    })
-    .map((input) => REQUIRED_INPUT_RESOLVERS[input]?.label ?? input);
+  return missingInputKeys(rule, profile).map(
+    (input) => REQUIRED_INPUT_RESOLVERS[input]?.label ?? input,
+  );
 }
 
 interface PredicateOutcome {
@@ -497,6 +507,7 @@ export function evaluateRules(
         ruleTitle: rule.title,
         reason: "missing_input",
         missingInputs: missing,
+        missingInputKeys: missingInputKeys(rule, profile),
         message: INSUFFICIENT_INFO_MESSAGE,
       });
       skippedRuleIds.push(rule.id);

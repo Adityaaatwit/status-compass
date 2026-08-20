@@ -277,6 +277,11 @@ export interface InsufficientInfoNote {
   ruleTitle: string;
   reason: InsufficientReason;
   missingInputs: string[];
+  /**
+   * Raw `requiredInputs` keys behind `missingInputs`, so the UI can link the
+   * student straight back to the question that supplies each one.
+   */
+  missingInputKeys?: string[];
   message: string;
 }
 
