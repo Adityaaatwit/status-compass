@@ -88,11 +88,11 @@ export function readAiConfig(): AiConfig {
     fallbackProvider: fallbackProvider === provider ? null : fallbackProvider,
     gemini: {
       apiKey: readEnv("GEMINI_API_KEY"),
-      model: readEnv("GEMINI_MODEL") || "gemini-2.0-flash",
+      model: readEnv("GEMINI_MODEL") || "gemini-3.6-flash",
     },
     groq: {
       apiKey: readEnv("GROQ_API_KEY"),
-      model: readEnv("GROQ_MODEL") || "llama-3.3-70b-versatile",
+      model: readEnv("GROQ_MODEL") || "openai/gpt-oss-20b",
     },
     limits: {
       maxQuestionChars: readInt("AI_MAX_QUESTION_CHARS", DEFAULT_LIMITS.maxQuestionChars, 40, 4000),
