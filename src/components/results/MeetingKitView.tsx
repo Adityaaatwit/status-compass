@@ -198,7 +198,7 @@ function SendToDso() {
         blank message with no recipient and no information from your answers.
       </p>
 
-      <p aria-live="polite" className="mt-2 text-xs text-attention-confirm-now">
+      <p aria-live="polite" className="mt-2 text-xs text-attn-confirm">
         {mailAppFailed
           ? "Your browser could not open an email application. Open your email in a browser tab instead, or copy your DSO's address into a new message manually."
           : ""}
