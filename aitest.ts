@@ -14,7 +14,21 @@ const base = readAiConfig();
 
 for (const provider of ["groq"] as const) {
   const config = { ...base, enabled: true, provider, fallbackProvider: null };
+  const { createGroqProvider } = await import("@/server/ai/groqProvider");
+  const inner = createGroqProvider(base.groq.apiKey, base.groq.model);
+  const wrapped = {
+    name: "groq" as const,
+    async generateGroundedAnswer(input: Parameters<typeof inner.generateGroundedAnswer>[0]) {
+      try {
+        return await inner.generateGroundedAnswer(input);
+      } catch (e) {
+        console.log("ERR", (e as { kind?: string }).kind, (e as Error).message);
+        throw e;
+      }
+    },
+  };
   const result = await askStayValidPipeline({
+    providers: { groq: wrapped },
     question: "What does duration of status mean for my program end date?",
     profile,
     corpus,
