@@ -4,11 +4,7 @@ import { useMemo, useState } from "react";
 
 import { StudentSupportIllustration } from "@/components/illustrations/StudentSupportIllustration";
 import { INSUFFICIENT_INFO_MESSAGE } from "@/domain/evaluateRules";
-import {
-  REQUIRED_INPUT_TO_FIELD,
-  getQuestion,
-  type IntakeFieldId,
-} from "@/domain/intakeQuestions";
+import { REQUIRED_INPUT_TO_FIELD, getQuestion, type IntakeFieldId } from "@/domain/intakeQuestions";
 import type { InsufficientInfoNote } from "@/domain/types";
 
 /**
@@ -124,10 +120,7 @@ function GuidedMissingInputs({ notes }: { notes: InsufficientInfoNote[] }) {
           </ul>
         </div>
 
-        <StudentSupportIllustration
-          decorative
-          className="hidden h-28 w-auto shrink-0 sm:block"
-        />
+        <StudentSupportIllustration decorative className="hidden h-28 w-auto shrink-0 sm:block" />
       </div>
     </div>
   );

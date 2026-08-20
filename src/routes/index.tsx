@@ -156,17 +156,14 @@ function HomePage() {
         <div className="sv-card grid items-center gap-8 p-6 sm:p-8 lg:grid-cols-[0.9fr_1.1fr]">
           <StudentSupportIllustration className="w-full" />
           <div>
-            <h2
-              id="support-heading"
-              className="text-2xl font-semibold text-foreground sm:text-3xl"
-            >
+            <h2 id="support-heading" className="text-2xl font-semibold text-foreground sm:text-3xl">
               Built for the conversation, not instead of it
             </h2>
             <p className="sv-prose mt-3 text-muted-foreground">
               Your DSO is the person who can confirm your status and sign your documents. Stay Valid
               exists so you arrive at that meeting with the right dates, the right questions, and
-              the source behind each one — so the time you get is spent on decisions rather than
-              on catching up.
+              the source behind each one — so the time you get is spent on decisions rather than on
+              catching up.
             </p>
             <Link
               to="/check"
@@ -178,7 +175,6 @@ function HomePage() {
           </div>
         </div>
       </section>
-
 
       <section aria-labelledby="scenarios-heading" className="border-y border-border bg-card py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">

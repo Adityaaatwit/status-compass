@@ -11,7 +11,8 @@ import { getQuestion, type IntakeFieldId } from "@/domain/intakeQuestions";
  */
 export const Route = createFileRoute("/check")({
   validateSearch: (search: Record<string, unknown>) => {
-    const raw = typeof search["focus"] === "string" ? (search["focus"] as IntakeFieldId) : undefined;
+    const raw =
+      typeof search["focus"] === "string" ? (search["focus"] as IntakeFieldId) : undefined;
     const focus = raw && getQuestion(raw) ? raw : undefined;
     return {
       ...(focus ? { focus } : {}),

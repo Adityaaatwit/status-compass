@@ -47,6 +47,8 @@ export function createGroqProvider(apiKey: string, model: string): AiChatProvide
             model,
             temperature: 0.2,
             max_tokens: input.limits.maxOutputTokens,
+            // Same reason as Gemini: reasoning tokens eat the output budget.
+            reasoning_effort: "low",
             response_format: { type: "json_object" },
             messages: [
               { role: "system", content: SYSTEM_PROMPT },

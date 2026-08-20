@@ -210,7 +210,8 @@ export const INTAKE_QUESTIONS: IntakeQuestion[] = [
     id: "plannedDepartureDate",
     group: "travel",
     shortLabel: "Planned departure date",
-    whyNeeded: "Departure and reentry dates decide which admission framework meets you at the port.",
+    whyNeeded:
+      "Departure and reentry dates decide which admission framework meets you at the port.",
     requiredForGoals: ["travel"],
     visibleWhen: (p) => p.plannedTravel,
     isAnswered: (p) => answeredDate(p.plannedDepartureDate),
