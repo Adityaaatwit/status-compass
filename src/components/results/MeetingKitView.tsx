@@ -1,4 +1,5 @@
-import { Printer } from "lucide-react";
+import { Mail, MailOpen, Printer } from "lucide-react";
+import { useState } from "react";
 
 import { ATTENTION_LABEL } from "@/components/shared/AttentionBadge";
 import { DATE_KIND_LABEL } from "@/components/shared/DateKindBadge";
