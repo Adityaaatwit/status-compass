@@ -85,9 +85,7 @@ export function MeetingKitView({ kit }: { kit: MeetingKit }) {
         <KitList title="Questions to ask my DSO" items={kit.questions} ordered />
         <KitList
           title="Documents and dates to bring"
-          items={[
-            ...new Set(kit.findings.flatMap((f) => f.documentsOrDatesToBring)),
-          ]}
+          items={[...new Set(kit.findings.flatMap((f) => f.documentsOrDatesToBring))]}
         />
         <KitList
           title="Preparation checklist"
@@ -98,7 +96,8 @@ export function MeetingKitView({ kit }: { kit: MeetingKit }) {
           <KitList
             title="Topics Stay Valid could not evaluate"
             items={kit.insufficient.map(
-              (note) => `${note.ruleTitle} — missing: ${note.missingInputs.join(", ") || "details"}`,
+              (note) =>
+                `${note.ruleTitle} — missing: ${note.missingInputs.join(", ") || "details"}`,
             )}
           />
         )}
@@ -116,8 +115,8 @@ export function MeetingKitView({ kit }: { kit: MeetingKit }) {
                   {citation.title}
                 </a>
                 <span className="block text-xs text-muted-foreground">
-                  {citation.publisher} — {LEGAL_STATUS_LABEL[String(citation.legalStatus)] ??
-                    citation.legalStatus}
+                  {citation.publisher} —{" "}
+                  {LEGAL_STATUS_LABEL[String(citation.legalStatus)] ?? citation.legalStatus}
                   {citation.lastCheckedAt
                     ? ` — last checked ${formatDateTime(citation.lastCheckedAt)}`
                     : ""}

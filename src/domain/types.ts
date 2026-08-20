@@ -23,11 +23,7 @@ export type LegalStatus =
   | (string & {});
 
 export type VerificationStatus =
-  | "verified"
-  | "partially_verified"
-  | "needs_review"
-  | "verified_no_rule_change"
-  | (string & {});
+  "verified" | "partially_verified" | "needs_review" | "verified_no_rule_change" | (string & {});
 
 export interface SourceRecord {
   id: string;
@@ -164,18 +160,9 @@ export interface Corpus {
 
 export type I94Notation = "ds" | "fixed_date" | "unknown";
 
-export type AcademicStage =
-  | "not_started"
-  | "in_progress"
-  | "final_term"
-  | "completed";
+export type AcademicStage = "not_started" | "in_progress" | "final_term" | "completed";
 
-export type OptStage =
-  | "none"
-  | "preparing"
-  | "applied"
-  | "post_completion_opt"
-  | "stem_opt";
+export type OptStage = "none" | "preparing" | "applied" | "post_completion_opt" | "stem_opt";
 
 export type Goal =
   | "continue_program"
@@ -255,13 +242,40 @@ export interface Finding {
   pathways: RulePathway[];
   sourceIds: string[];
   matchedFacts: string[];
+  /**
+   * Predicates this finding relied on whose only evidence is the student's own
+   * answer. Stay Valid must never present these as established fact — the UI
+   * renders a "only your DSO can confirm this" caveat for each one.
+   */
+  selfReportedGates: SelfReportedGate[];
   uncertainty: string | null;
   humanReviewRequired: boolean;
 }
 
+/** A predicate backed solely by a student's self-assessment. */
+export interface SelfReportedGate {
+  predicate: string;
+  /** What the student was asked. */
+  question: string;
+  /** The answer that caused this rule to appear. */
+  answer: string;
+  /** Why that answer is not authoritative. */
+  caveat: string;
+}
+
+/**
+ * Why a rule could not be evaluated.
+ *  - `missing_input`      — a required profile date/value was not supplied.
+ *  - `self_reported_gate` — the rule depends on something only a DSO can
+ *                           confirm (e.g. whether status is being maintained)
+ *                           and the student did not answer "yes".
+ */
+export type InsufficientReason = "missing_input" | "self_reported_gate";
+
 export interface InsufficientInfoNote {
   ruleId: string;
   ruleTitle: string;
+  reason: InsufficientReason;
   missingInputs: string[];
   message: string;
 }

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ListChecks } from "lucide-react";
 
+import { AskStayValid } from "@/components/chat/AskStayValid";
 import { FindingCard } from "@/components/results/FindingCard";
 import { MeetingKitView } from "@/components/results/MeetingKitView";
 import { PathwayList } from "@/components/results/PathwayList";
@@ -44,6 +45,7 @@ function PlanPage() {
     pathways,
     actions,
     meetingKit,
+    clearCount,
   } = useStayValid();
 
   if (!validation.ok) {
@@ -139,9 +141,13 @@ function PlanPage() {
           </div>
         </section>
 
-        {evaluation.insufficient.length > 0 && (
-          <InsufficientInfo notes={evaluation.insufficient} />
-        )}
+        {evaluation.insufficient.length > 0 && <InsufficientInfo notes={evaluation.insufficient} />}
+
+        {/* Placed after the findings and before the pathways: the chat exists to
+            explain what the student has just read, not to replace it.
+            Keyed on clearCount so "Clear my information" discards the
+            conversation and the AI acknowledgement along with the answers. */}
+        <AskStayValid key={clearCount} />
 
         <PathwayList pathways={pathways} corpus={corpus} />
 
@@ -195,15 +201,7 @@ function PlanPage() {
   );
 }
 
-function Empty({
-  title,
-  body,
-  detail,
-}: {
-  title: string;
-  body: string;
-  detail?: string;
-}) {
+function Empty({ title, body, detail }: { title: string; body: string; detail?: string }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 sm:px-6">
       <div className="sv-card p-8 text-center">

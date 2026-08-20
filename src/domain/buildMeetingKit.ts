@@ -63,7 +63,10 @@ export function profileFacts(profile: StudentProfile): Array<{ label: string; va
   if (profile.eadStartDate) facts.push({ label: "EAD start", value: profile.eadStartDate });
   if (profile.eadEndDate) facts.push({ label: "EAD expiration", value: profile.eadEndDate });
   if (profile.dsoOptRecommendationDate)
-    facts.push({ label: "DSO OPT recommendation entered", value: profile.dsoOptRecommendationDate });
+    facts.push({
+      label: "DSO OPT recommendation entered",
+      value: profile.dsoOptRecommendationDate,
+    });
   facts.push({ label: "Travel planned", value: profile.plannedTravel ? "Yes" : "No" });
   if (profile.plannedDepartureDate)
     facts.push({ label: "Planned departure", value: profile.plannedDepartureDate });

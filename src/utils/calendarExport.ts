@@ -46,7 +46,18 @@ function nextDay(iso: string): string {
   return icsDate(dt.toISOString().slice(0, 10));
 }
 
-export function buildIcs(items: TimelineItem[], corpusVersion: string): string {
+/**
+ * RFC 5545 requires DTSTAMP to be the moment the calendar object was created,
+ * in UTC. Passing it in keeps `buildIcs` a pure function so tests get a stable
+ * output for a fixed timestamp.
+ */
+export function buildIcs(
+  items: TimelineItem[],
+  corpusVersion: string,
+  generatedAt: Date = new Date(),
+): string {
+  const dtstamp = `${generatedAt.toISOString().slice(0, 19).replace(/[-:]/g, "")}Z`;
+
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -69,7 +80,7 @@ export function buildIcs(items: TimelineItem[], corpusVersion: string): string {
       lines.push(
         "BEGIN:VEVENT",
         `UID:${escapeIcs(item.id)}-${icsDate(item.date)}@stayvalid.local`,
-        `DTSTAMP:${icsDate(item.date)}T000000Z`,
+        `DTSTAMP:${dtstamp}`,
         `DTSTART;VALUE=DATE:${icsDate(item.date)}`,
         `DTEND;VALUE=DATE:${nextDay(item.date)}`,
         fold(`SUMMARY:${escapeIcs(`Stay Valid: ${item.label}`)}`),

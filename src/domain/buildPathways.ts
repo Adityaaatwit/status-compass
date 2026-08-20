@@ -48,7 +48,5 @@ export function buildPathways(evaluation: EvaluationResult): PathwayCard[] {
     }
   }
 
-  return [...byId.values()].sort(
-    (a, b) => ORDER.indexOf(a.attention) - ORDER.indexOf(b.attention),
-  );
+  return [...byId.values()].sort((a, b) => ORDER.indexOf(a.attention) - ORDER.indexOf(b.attention));
 }

@@ -94,10 +94,13 @@ function HomePage() {
               Example of what you get
             </p>
             <ul className="mt-4 space-y-3">
+              {/* The engine emits scheduled effective dates as
+                  `needs_confirmation`, never `official` — publication is not
+                  proof a rule is in force. The preview must match. */}
               <PreviewRow
                 date="15 September 2026"
                 label="Policy checkpoint: new admission-period framework"
-                badge={<DateKindBadge kind="official" />}
+                badge={<DateKindBadge kind="needs_confirmation" />}
               />
               <PreviewRow
                 date="18 December 2026"
@@ -145,15 +148,9 @@ function HomePage() {
         </div>
       </section>
 
-      <section
-        aria-labelledby="scenarios-heading"
-        className="border-y border-border bg-card py-16"
-      >
+      <section aria-labelledby="scenarios-heading" className="border-y border-border bg-card py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2
-            id="scenarios-heading"
-            className="text-2xl font-semibold text-foreground sm:text-3xl"
-          >
+          <h2 id="scenarios-heading" className="text-2xl font-semibold text-foreground sm:text-3xl">
             Try a demonstration profile
           </h2>
           <p className="sv-prose mt-2 text-muted-foreground">

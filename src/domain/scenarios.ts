@@ -67,8 +67,7 @@ export const scenarios: Scenario[] = [
   {
     id: "on-opt",
     name: "Student participating in STEM OPT",
-    summary:
-      "Fictional demonstration: a graduate on STEM OPT with an EAD expiring in 2028.",
+    summary: "Fictional demonstration: a graduate on STEM OPT with an EAD expiring in 2028.",
     profile: {
       ...base,
       i20ProgramStartDate: "2022-08-22",
