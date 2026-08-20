@@ -34,18 +34,33 @@ export function stripCitationMarkers(value: string): string {
   return value.replace(/\s*\[(?:page|web|source):[^\]]*\]/gi, "").trim();
 }
 
+/**
+ * Reads a scalar display string, stripping research markers.
+ *
+ * `stripCitationMarkers` was previously applied only to array fields, so every
+ * scalar the UI renders — headlines, explanations, studentImpact, rationale —
+ * carried its `[page:1][web:18]` markers straight to the student. Provenance
+ * belongs in the source cards, not mid-sentence.
+ */
+function displayString(value: unknown, fallback = ""): string {
+  return stripCitationMarkers(String(value ?? fallback));
+}
+
+/** Nullable variant: keeps null as null rather than turning it into "". */
+function nullableDisplayString(value: unknown): string | null {
+  return typeof value === "string" ? stripCitationMarkers(value) : null;
+}
+
 function strArray(value: unknown): string[] {
   return Array.isArray(value)
-    ? value
-        .filter((v): v is string => typeof v === "string")
-        .map(stripCitationMarkers)
+    ? value.filter((v): v is string => typeof v === "string").map(stripCitationMarkers)
     : [];
 }
 
 function adaptSource(raw: Record<string, unknown>): SourceRecord {
   return {
     id: String(raw["id"] ?? ""),
-    title: String(raw["title"] ?? "Untitled source"),
+    title: displayString(raw["title"], "Untitled source"),
     publisher: String(raw["publisher"] ?? "Unknown publisher"),
     agency: (raw["agency"] as string | null) ?? null,
     sourceTier: Number(raw["sourceTier"] ?? 3),
@@ -62,13 +77,13 @@ function adaptSource(raw: Record<string, unknown>): SourceRecord {
     jurisdiction: (raw["jurisdiction"] as string | null) ?? null,
     classificationsCovered: strArray(raw["classificationsCovered"]),
     topics: strArray(raw["topics"]),
-    officialRationale: (raw["officialRationale"] as string | null) ?? null,
-    minimalSupportingExcerpt: (raw["minimalSupportingExcerpt"] as string | null) ?? null,
+    officialRationale: nullableDisplayString(raw["officialRationale"]),
+    minimalSupportingExcerpt: nullableDisplayString(raw["minimalSupportingExcerpt"]),
     verifiedClaims: strArray(raw["verifiedClaims"]),
     conflictsWithSourceIds: strArray(raw["conflictsWithSourceIds"]),
     lastCheckedAt: typeof raw["lastCheckedAt"] === "string" ? raw["lastCheckedAt"] : null,
     verificationStatus: String(raw["verificationStatus"] ?? "needs_review"),
-    verificationNotes: (raw["verificationNotes"] as string | null) ?? null,
+    verificationNotes: nullableDisplayString(raw["verificationNotes"]),
   };
 }
 
@@ -80,7 +95,7 @@ function adaptRule(raw: Record<string, unknown>): RuleRecord {
 
   return {
     id: String(raw["id"] ?? ""),
-    title: String(raw["title"] ?? "Untitled rule"),
+    title: displayString(raw["title"], "Untitled rule"),
     topic: String(raw["topic"] ?? "general"),
     classifications: strArray(raw["classifications"]),
     legalStatus: String(raw["legalStatus"] ?? "status_uncertain"),
@@ -95,19 +110,19 @@ function adaptRule(raw: Record<string, unknown>): RuleRecord {
     requiredInputs: strArray(raw["requiredInputs"]),
     calculation: {
       type: String(calc["type"] ?? "none"),
-      formula: (calc["formula"] as string | null) ?? null,
+      formula: nullableDisplayString(calc["formula"]),
       dayCounting: (calc["dayCounting"] as string | null) ?? null,
       weekendHolidayTreatment: (calc["weekendHolidayTreatment"] as string | null) ?? null,
-      basis: (calc["basis"] as string | null) ?? null,
+      basis: nullableDisplayString(calc["basis"]),
       isLegalDeadline: calc["isLegalDeadline"] === true,
     },
     finding: {
       attention: asAttention(finding["attention"]),
-      headline: String(finding["headline"] ?? ""),
-      explanation: String(finding["explanation"] ?? ""),
-      whyThisAppears: String(finding["whyThisAppears"] ?? ""),
-      officialRationale: String(finding["officialRationale"] ?? ""),
-      studentImpact: String(finding["studentImpact"] ?? ""),
+      headline: displayString(finding["headline"]),
+      explanation: displayString(finding["explanation"]),
+      whyThisAppears: displayString(finding["whyThisAppears"]),
+      officialRationale: displayString(finding["officialRationale"]),
+      studentImpact: displayString(finding["studentImpact"]),
       knownFacts: strArray(finding["knownFacts"]),
       confirmationNeeded: strArray(finding["confirmationNeeded"]),
       actions: strArray(finding["actions"]),
@@ -118,19 +133,19 @@ function adaptRule(raw: Record<string, unknown>): RuleRecord {
       const pw = (p ?? {}) as Record<string, unknown>;
       return {
         id: String(pw["id"] ?? ""),
-        title: String(pw["title"] ?? "Topic to discuss"),
-        whyItMayBeRelevant: String(pw["whyItMayBeRelevant"] ?? ""),
+        title: displayString(pw["title"], "Topic to discuss"),
+        whyItMayBeRelevant: displayString(pw["whyItMayBeRelevant"]),
         eligibilityNotDetermined: pw["eligibilityNotDetermined"] !== false,
         confirmationNeeded: strArray(pw["confirmationNeeded"]),
         questionsForDso: strArray(pw["questionsForDso"]),
       };
     }),
     sourceIds: strArray(raw["sourceIds"]),
-    minimalSupportingExcerpt: (raw["minimalSupportingExcerpt"] as string | null) ?? null,
+    minimalSupportingExcerpt: nullableDisplayString(raw["minimalSupportingExcerpt"]),
     boundaryTests: Array.isArray(raw["boundaryTests"])
       ? (raw["boundaryTests"] as RuleRecord["boundaryTests"])
       : [],
-    uncertainty: (raw["uncertainty"] as string | null) ?? null,
+    uncertainty: nullableDisplayString(raw["uncertainty"]),
     humanReviewRequired: raw["humanReviewRequired"] === true,
   };
 }
@@ -138,12 +153,12 @@ function adaptRule(raw: Record<string, unknown>): RuleRecord {
 function adaptCandidate(raw: Record<string, unknown>): CandidateUpdate {
   return {
     id: String(raw["id"] ?? ""),
-    headline: String(raw["headline"] ?? ""),
+    headline: displayString(raw["headline"]),
     discoveredAt: String(raw["discoveredAt"] ?? ""),
     eventDate: toIsoDate(raw["eventDate"]),
     topic: String(raw["topic"] ?? "general"),
-    summary: String(raw["summary"] ?? ""),
-    whyItMatters: String(raw["whyItMatters"] ?? ""),
+    summary: displayString(raw["summary"]),
+    whyItMatters: displayString(raw["whyItMatters"]),
     sourceIds: strArray(raw["sourceIds"]),
     affectedRuleIds: strArray(raw["affectedRuleIds"]),
     primaryAuthorityLocated: raw["primaryAuthorityLocated"] === true,
@@ -193,7 +208,5 @@ export function sourceById(corpus: Corpus, id: string): SourceRecord | undefined
 }
 
 export function sourcesByIds(corpus: Corpus, ids: string[]): SourceRecord[] {
-  return ids
-    .map((id) => sourceById(corpus, id))
-    .filter((s): s is SourceRecord => Boolean(s));
+  return ids.map((id) => sourceById(corpus, id)).filter((s): s is SourceRecord => Boolean(s));
 }

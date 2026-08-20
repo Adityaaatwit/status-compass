@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, UserCheck } from "lucide-react";
 import { useState } from "react";
 
 import { AttentionBadge } from "@/components/shared/AttentionBadge";
@@ -25,6 +25,23 @@ export function FindingCard({ finding, corpus }: { finding: Finding; corpus: Cor
 
       <h3 className="mt-3 text-lg font-semibold text-foreground">{finding.headline}</h3>
       <p className="sv-prose mt-2 text-sm text-muted-foreground">{finding.explanation}</p>
+
+      {finding.selfReportedGates.length > 0 && (
+        <div className="mt-3 rounded-lg border border-attn-prepare/30 bg-amber-soft p-3">
+          <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-attn-prepare uppercase">
+            <UserCheck aria-hidden="true" className="size-3.5" />
+            Based on your own answer, not a verified fact
+          </h4>
+          <ul className="mt-2 space-y-2 text-sm text-foreground">
+            {finding.selfReportedGates.map((gate) => (
+              <li key={gate.predicate}>
+                <span className="font-medium">{gate.question}</span> {gate.answer}
+                <p className="mt-0.5 text-xs text-muted-foreground">{gate.caveat}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {finding.dates.length > 0 && (
         <ul className="mt-4 space-y-2">

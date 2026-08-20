@@ -5,14 +5,7 @@
  * network request is made, and "Clear my information" resets everything.
  */
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
 import { buildChecklist } from "@/domain/buildChecklist";
 import { buildMeetingKit } from "@/domain/buildMeetingKit";
@@ -48,6 +41,13 @@ interface StayValidState {
   updateProfile: (patch: Partial<StudentProfile>) => void;
   loadScenario: (scenario: Scenario) => void;
   clearAll: () => void;
+  /**
+   * Increments on every `clearAll`. Consumers holding state this provider does
+   * not own — the Ask Stay Valid conversation, for one — remount on it, so
+   * "Clear my information" really does clear everything rather than only the
+   * parts the provider happens to know about.
+   */
+  clearCount: number;
 }
 
 const StayValidContext = createContext<StayValidState | null>(null);
@@ -60,6 +60,7 @@ export function StayValidProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<StudentProfile>(emptyProfile);
   const [scenarioLabel, setScenarioLabel] = useState<string | null>(null);
   const [hasAnswers, setHasAnswers] = useState(false);
+  const [clearCount, setClearCount] = useState(0);
 
   const updateProfile = useCallback((patch: Partial<StudentProfile>) => {
     setHasAnswers(true);
@@ -76,6 +77,7 @@ export function StayValidProvider({ children }: { children: ReactNode }) {
     setProfile(emptyProfile);
     setScenarioLabel(null);
     setHasAnswers(false);
+    setClearCount((n) => n + 1);
   }, []);
 
   const derived = useMemo(() => {
@@ -110,8 +112,19 @@ export function StayValidProvider({ children }: { children: ReactNode }) {
       updateProfile,
       loadScenario,
       clearAll,
+      clearCount,
     }),
-    [asOfDate, profile, scenarioLabel, hasAnswers, derived, updateProfile, loadScenario, clearAll],
+    [
+      asOfDate,
+      profile,
+      scenarioLabel,
+      hasAnswers,
+      derived,
+      updateProfile,
+      loadScenario,
+      clearAll,
+      clearCount,
+    ],
   );
 
   return <StayValidContext.Provider value={value}>{children}</StayValidContext.Provider>;

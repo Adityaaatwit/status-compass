@@ -13,10 +13,7 @@ const WEIGHT: Record<Attention, number> = {
   information: 3,
 };
 
-export function buildChecklist(
-  evaluation: EvaluationResult,
-  asOfDate: string,
-): ChecklistAction[] {
+export function buildChecklist(evaluation: EvaluationResult, asOfDate: string): ChecklistAction[] {
   const actions: ChecklistAction[] = [];
 
   evaluation.findings.forEach((finding) => {
@@ -33,10 +30,7 @@ export function buildChecklist(
         ruleId: finding.ruleId,
         sourceIds: finding.sourceIds,
         relatedDateIds: finding.dates.map((d) => d.id),
-        priority:
-          WEIGHT[finding.attention] * 1000 +
-          Math.min(nearest ?? 999, 999) +
-          index * 0.1,
+        priority: WEIGHT[finding.attention] * 1000 + Math.min(nearest ?? 999, 999) + index * 0.1,
       });
     });
   });

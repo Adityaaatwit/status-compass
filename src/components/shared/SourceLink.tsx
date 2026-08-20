@@ -28,9 +28,8 @@ export function SourceLinks({
           >
             <ExternalLink aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
             <span>
-              View official source: {source.title.length > 90 && compact
-                ? `${source.title.slice(0, 90)}…`
-                : source.title}
+              View official source:{" "}
+              {source.title.length > 90 && compact ? `${source.title.slice(0, 90)}…` : source.title}
             </span>
           </a>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

@@ -137,9 +137,7 @@ describe("corpus boundary tests", () => {
         // a deliberate skip. It must never do more than one at a time.
         expect([finding, note].filter(Boolean).length).toBeLessThanOrEqual(1);
         if (finding) {
-          expect(["confirm_now", "prepare", "monitor", "information"]).toContain(
-            finding.attention,
-          );
+          expect(["confirm_now", "prepare", "monitor", "information"]).toContain(finding.attention);
         }
       });
     }

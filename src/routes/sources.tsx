@@ -2,10 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import {
-  LegalStatusChip,
-  VerificationChip,
-} from "@/components/sources/LegalStatusChip";
+import { LegalStatusChip, VerificationChip } from "@/components/sources/LegalStatusChip";
 import { Disclaimer } from "@/components/shared/Disclaimer";
 import { useStayValid } from "@/hooks/useStayValid";
 import { formatDate, formatDateTime } from "@/utils/dateFormatting";
@@ -175,10 +172,7 @@ function SourcesPage() {
               <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-2">
                 <Row label="Published" value={formatDate(source.publishedAt)} />
                 <Row label="Last checked" value={formatDateTime(source.lastCheckedAt)} />
-                <Row
-                  label="Scheduled effective"
-                  value={formatDate(source.scheduledEffectiveAt)}
-                />
+                <Row label="Scheduled effective" value={formatDate(source.scheduledEffectiveAt)} />
                 <Row label="Actual effective" value={formatDate(source.actualEffectiveAt)} />
               </dl>
 

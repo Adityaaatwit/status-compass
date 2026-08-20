@@ -18,14 +18,7 @@
  *  - candidate-updates.json is never consulted for activation.
  */
 
-import {
-  addDays,
-  addYears,
-  capAt,
-  isValidIsoDate,
-  maxDate,
-  minDate,
-} from "./dateCalculations";
+import { addDays, addYears, capAt, isValidIsoDate, maxDate, minDate } from "./dateCalculations";
 import type {
   Attention,
   CandidateUpdate,
@@ -35,7 +28,9 @@ import type {
   Finding,
   InsufficientInfoNote,
   RuleRecord,
+  SelfReportedGate,
   StudentProfile,
+  YesNoUnsure,
 } from "./types";
 
 export const INSUFFICIENT_INFO_MESSAGE =
@@ -53,6 +48,60 @@ const NON_OPERATIVE_STATUSES = new Set([
 ]);
 
 type Predicate = (p: StudentProfile, ctx: { asOfDate: string; rule: RuleRecord }) => boolean;
+
+/**
+ * Predicates whose only evidence is the student's own assessment of a question
+ * Stay Valid is not competent to answer.
+ *
+ * These are handled differently from ordinary predicates. An ordinary predicate
+ * that fails simply skips its rule. A self-reported gate that is not answered
+ * "yes" must NOT silently skip the rule: silence would imply the rule does not
+ * apply, which is itself a status determination. Instead the engine emits an
+ * insufficient-information note pointing the student at their DSO.
+ *
+ * When such a gate does pass, the resulting finding carries the gate so the UI
+ * can state plainly that the finding rests on the student's own answer.
+ */
+const SELF_REPORTED_GATES: Record<
+  string,
+  {
+    question: string;
+    /** The profile field backing the answer. */
+    read: (p: StudentProfile) => YesNoUnsure;
+    /** Human-readable rendering of each possible answer. */
+    label: Record<YesNoUnsure, string>;
+    caveat: string;
+    /** Shown when the answer was not "yes". */
+    blockedMessage: string;
+  }
+> = {
+  maintainingF1StatusOnEffectiveDate: {
+    question: "Are you maintaining F-1 status?",
+    read: (p) => p.maintainingStatus,
+    label: {
+      yes: "You said you believe you are.",
+      no: "You said there may be a problem.",
+      unsure: "You said you are not sure.",
+    },
+    caveat:
+      "Stay Valid cannot determine whether you are maintaining status. This item appeared because of your own answer, not because your status was verified. Only your DSO or a qualified immigration attorney can confirm it.",
+    blockedMessage:
+      "This topic depends on whether you are maintaining F-1 status. Stay Valid cannot determine that, and it will not assume an answer. Ask your DSO to confirm your status, then revisit this page.",
+  },
+  presentInUSOnEffectiveDate: {
+    question: "Are you currently in the United States?",
+    read: (p) => p.presentInUS,
+    label: {
+      yes: "You said you are in the United States.",
+      no: "You said you are outside the United States.",
+      unsure: "You said you are not sure.",
+    },
+    caveat:
+      "This item appeared because of your own answer about where you are. Your admission record is what governs, so confirm it against your I-94.",
+    blockedMessage:
+      "This topic depends on whether you are in the United States. Answer that question in the questionnaire, or confirm your admission record with your DSO.",
+  },
+};
 
 /**
  * Named predicates used by `appliesWhen` in rules.json. Each returns a strict
@@ -73,9 +122,7 @@ const PREDICATES: Record<string, Predicate> = {
   noPostCompletionOptOrStemOpt: (p) =>
     p.optStage !== "post_completion_opt" && p.optStage !== "stem_opt",
   planningPostCompletionOpt: (p) =>
-    p.optStage === "preparing" ||
-    p.optStage === "applied" ||
-    p.goals.includes("explore_opt"),
+    p.optStage === "preparing" || p.optStage === "applied" || p.goals.includes("explore_opt"),
   plannedInternationalTravel: (p) => p.plannedTravel === true,
   expectedReentryOnOrAfterEffectiveDate: (p, { rule }) => {
     const gate = rule.activeFrom ?? rule.doNotActivateBefore;
@@ -92,7 +139,10 @@ const REQUIRED_INPUT_RESOLVERS: Record<
   string,
   { label: string; get: (p: StudentProfile) => unknown }
 > = {
-  i94Notation: { label: "What your I-94 shows", get: (p) => (p.i94Notation === "unknown" ? null : p.i94Notation) },
+  i94Notation: {
+    label: "What your I-94 shows",
+    get: (p) => (p.i94Notation === "unknown" ? null : p.i94Notation),
+  },
   i94AdmitUntilDate: { label: "I-94 admit-until date", get: (p) => p.i94AdmitUntilDate },
   dateOfAdmission: { label: "Most recent U.S. entry date", get: (p) => p.mostRecentEntryDate },
   i20ProgramStartDate: { label: "I-20 program start date", get: (p) => p.i20ProgramStartDate },
@@ -106,7 +156,10 @@ const REQUIRED_INPUT_RESOLVERS: Record<
   optOrStemOptEadEndDateOnEffectiveDate: {
     label: "EAD expiration date",
     // Optional: a student with no EAD legitimately has no value here.
-    get: (p) => (p.optStage === "post_completion_opt" || p.optStage === "stem_opt" ? p.eadEndDate : "not_applicable"),
+    get: (p) =>
+      p.optStage === "post_completion_opt" || p.optStage === "stem_opt"
+        ? p.eadEndDate
+        : "not_applicable",
   },
   dsoOptRecommendationDate: {
     label: "Date your DSO entered the OPT recommendation",
@@ -118,7 +171,10 @@ const REQUIRED_INPUT_RESOLVERS: Record<
     label: "Whether your current admission is D/S or a fixed date",
     get: (p) => (p.i94Notation === "unknown" ? null : p.i94Notation),
   },
-  pendingOrApprovedEos: { label: "Whether an application is pending", get: (p) => p.pendingApplication },
+  pendingOrApprovedEos: {
+    label: "Whether an application is pending",
+    get: (p) => p.pendingApplication,
+  },
   pendingOrApprovedOtherBenefits: {
     label: "Whether another benefit request is pending",
     get: (p) => p.pendingApplication,
@@ -136,20 +192,58 @@ function missingInputs(rule: RuleRecord, profile: StudentProfile): string[] {
     .map((input) => REQUIRED_INPUT_RESOLVERS[input]?.label ?? input);
 }
 
+interface PredicateOutcome {
+  /** True when every non-self-reported condition is satisfied. */
+  matched: boolean;
+  matchedFacts: string[];
+  /** Satisfied self-reported gates, carried onto the finding as caveats. */
+  selfReportedGates: SelfReportedGate[];
+  /**
+   * Self-reported gates that were NOT answered "yes" even though every other
+   * condition held. Their presence turns a silent skip into an explicit
+   * insufficient-information note.
+   */
+  blockedBy: Array<{ predicate: string; message: string }>;
+}
+
 function predicatesMatch(
   rule: RuleRecord,
   profile: StudentProfile,
   asOfDate: string,
-): { matched: boolean; matchedFacts: string[] } {
+): PredicateOutcome {
   const ctx = { asOfDate, rule };
   const run = (name: string) => PREDICATES[name]?.(profile, ctx) ?? false;
 
-  const all = rule.appliesWhen.all.every(run);
+  const selfReportedGates: SelfReportedGate[] = [];
+  const blockedBy: Array<{ predicate: string; message: string }> = [];
+
+  // Self-reported gates are pulled out of `all` and judged separately so that a
+  // "no"/"unsure" answer produces an explicit note instead of silence.
+  const selfReportedNames = rule.appliesWhen.all.filter((name) => name in SELF_REPORTED_GATES);
+  const ordinaryAll = rule.appliesWhen.all.filter((name) => !(name in SELF_REPORTED_GATES));
+
+  for (const name of selfReportedNames) {
+    const gate = SELF_REPORTED_GATES[name];
+    if (!gate) continue;
+    const answer = gate.read(profile);
+    if (answer === "yes") {
+      selfReportedGates.push({
+        predicate: name,
+        question: gate.question,
+        answer: gate.label.yes,
+        caveat: gate.caveat,
+      });
+    } else {
+      blockedBy.push({ predicate: name, message: gate.blockedMessage });
+    }
+  }
+
+  const all = ordinaryAll.every(run);
   const any = rule.appliesWhen.any.length === 0 || rule.appliesWhen.any.some(run);
   const none = rule.appliesWhen.not.every((n) => !run(n));
   const matchedFacts = [...rule.appliesWhen.all, ...rule.appliesWhen.any].filter(run);
 
-  return { matched: all && any && none, matchedFacts };
+  return { matched: all && any && none, matchedFacts, selfReportedGates, blockedBy };
 }
 
 /**
@@ -173,7 +267,8 @@ const CALCULATORS: Record<
         label: "End of 60-day grace period",
         date: deadline,
         kind: "official",
-        basis: "Program end date plus 60 calendar days, per 8 CFR 214.2(f) grace-period guidance in the corpus.",
+        basis:
+          "Program end date plus 60 calendar days, per 8 CFR 214.2(f) grace-period guidance in the corpus.",
         ruleId: rule.id,
         sourceIds: rule.sourceIds,
       });
@@ -184,7 +279,8 @@ const CALCULATORS: Record<
           label: "Stay Valid reminder: plan your next step",
           date: remind,
           kind: "reminder",
-          basis: "Stay Valid preparation reminder 30 days before your program end date. This is not a government deadline.",
+          basis:
+            "Stay Valid preparation reminder 30 days before your program end date. This is not a government deadline.",
           ruleId: rule.id,
           sourceIds: [],
         });
@@ -297,7 +393,8 @@ const CALCULATORS: Record<
           label: "60 days after DSO OPT recommendation",
           date: recDeadline,
           kind: "official",
-          basis: "USCIS must receive Form I-765 no later than 60 days after the DSO enters the recommendation in SEVIS.",
+          basis:
+            "USCIS must receive Form I-765 no later than 60 days after the DSO enters the recommendation in SEVIS.",
           ruleId: rule.id,
           sourceIds: rule.sourceIds,
         });
@@ -367,8 +464,28 @@ export function evaluateRules(
       continue;
     }
 
-    const { matched, matchedFacts } = predicatesMatch(rule, profile, asOfDate);
+    const { matched, matchedFacts, selfReportedGates, blockedBy } = predicatesMatch(
+      rule,
+      profile,
+      asOfDate,
+    );
     if (!matched) {
+      skippedRuleIds.push(rule.id);
+      continue;
+    }
+
+    // Every ordinary condition held but a question only a DSO can answer did
+    // not. Say so explicitly rather than dropping the rule silently.
+    if (blockedBy.length > 0) {
+      insufficient.push({
+        ruleId: rule.id,
+        ruleTitle: rule.title,
+        reason: "self_reported_gate",
+        missingInputs: blockedBy.map(
+          (b) => SELF_REPORTED_GATES[b.predicate]?.question ?? b.predicate,
+        ),
+        message: blockedBy.map((b) => b.message).join(" "),
+      });
       skippedRuleIds.push(rule.id);
       continue;
     }
@@ -378,6 +495,7 @@ export function evaluateRules(
       insufficient.push({
         ruleId: rule.id,
         ruleTitle: rule.title,
+        reason: "missing_input",
         missingInputs: missing,
         message: INSUFFICIENT_INFO_MESSAGE,
       });
@@ -427,6 +545,7 @@ export function evaluateRules(
       pathways: rule.possiblePathways,
       sourceIds: rule.sourceIds,
       matchedFacts,
+      selfReportedGates,
       uncertainty: rule.uncertainty ?? null,
       humanReviewRequired: rule.humanReviewRequired,
     });

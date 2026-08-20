@@ -137,13 +137,13 @@ export function IntakeWizard() {
               ]}
             />
             <RadioGroupField
-              label="As far as you know, are you maintaining F-1 status?"
-              hint="Only your DSO can confirm this. Your answer is used to decide which topics to show."
+              label="Has anyone told you there is a problem with your F-1 status?"
+              hint="Stay Valid cannot determine your status and will not try. This answer only selects which topics to show you — “I'm not sure” is a perfectly good answer, and choosing it will show you what to ask your DSO instead of hiding the topic."
               value={profile.maintainingStatus}
               onChange={(maintainingStatus) => updateProfile({ maintainingStatus })}
               options={[
-                { value: "yes", label: "Yes, as far as I know" },
-                { value: "no", label: "No / there is a problem" },
+                { value: "yes", label: "No — as far as I know things are in order" },
+                { value: "no", label: "Yes — I've been told there's a problem" },
                 { value: "unsure", label: "I'm not sure" },
               ]}
             />

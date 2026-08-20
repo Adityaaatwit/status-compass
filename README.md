@@ -1,433 +1,344 @@
-# Stay Valid — Project Documentation
+# Stay Valid
 
-> **Stay Valid for F-1 international students.**
-> Turn immigration policy into dated timelines, attention-based checkpoints, and a printable DSO meeting kit.
+> Turn F-1 immigration policy into dated checkpoints, clear next steps, and a
+> printable DSO meeting kit — with every item traced to an official source.
 >
 > Built for the **Stellic Pathfinders Challenge**.
 
----
-
-## 1. What this project is
-
-**Stay Valid** is a deterministic, client-side web application that helps F-1 international students understand how current U.S. immigration rules map to their personal situation. It does **not** give legal advice, store data, or use AI. Instead it:
-
-1. Reads a curated, versioned research corpus (`sources.json`, `rules.json`, `candidate-updates.json`).
-2. Collects non-identifying facts through a privacy-first questionnaire.
-3. Runs a pure-function rules engine to produce:
-   - a chronological **timeline**,
-   - **attention-based findings**,
-   - relevant **pathways / next steps**,
-   - a **preparation checklist**, and
-   - a **printable DSO meeting kit**.
-
-All outputs are traced back to official sources. Every legal deadline is labelled as official, document-based, a Stay Valid reminder, or a confirmation-needed item.
+**Educational preparation tool. Not legal advice.** Stay Valid never determines
+your immigration status and never states eligibility.
 
 ---
 
-## 2. Technology stack
+## What it does
 
-| Layer | Choice |
-|-------|--------|
-| Framework | [TanStack Start](https://tanstack.com/start) v1 (React 19 + Vite 7 + file-based routing) |
-| Language | TypeScript 5.8 (strict mode) |
-| Styling | Tailwind CSS v4 with native CSS `@theme` tokens |
-| UI primitives | Radix UI (shadcn-style components) |
-| Icons | Lucide React |
-| State | React Context + `useMemo` (in-memory only) |
-| Forms | React Hook Form + Zod |
-| Testing | Vitest |
-| Build target | Cloudflare Worker (edge) via Nitro |
+An F-1 student answers a handful of non-identifying questions — what their I-94
+says, their I-20 dates, where they are in their program, whether they are
+travelling. Stay Valid runs a deterministic rules engine over a versioned
+research corpus and produces:
 
-**No backend, no database, no runtime AI, no external API calls.** All data lives in the bundled JSON files and React state.
+- a **timeline** where every date says where it came from;
+- **findings** with an attention level and the reason they appeared;
+- **pathways** — topics to raise, never eligibility claims;
+- a prioritised **checklist**;
+- a **calendar export** (`.ics`);
+- a printable **DSO meeting kit**;
+- **Ask Stay Valid** — a question box that answers in plain language, from the
+  same verified sources.
+
+It asks for no name, no SEVIS ID, no passport number, no uploads, and keeps
+nothing after you close the tab.
 
 ---
 
-## 3. Project structure
+## Core evaluation is deterministic and works without AI
 
-```text
-├── public/                        # Static assets (favicon, robots.txt)
-├── src/
-│   ├── components/
-│   │   ├── intake/                # Questionnaire components
-│   │   │   ├── Field.tsx          # Reusable date/radio/checkbox fields
-│   │   │   └── IntakeWizard.tsx   # Multi-step intake form
-│   │   ├── layout/                # Site chrome
-│   │   │   ├── SiteHeader.tsx
-│   │   │   └── SiteFooter.tsx
-│   │   ├── results/               # Plan / results page widgets
-│   │   │   ├── FindingCard.tsx
-│   │   │   ├── MeetingKitView.tsx
-│   │   │   ├── PathwayList.tsx
-│   │   │   └── TimelineView.tsx
-│   │   └── shared/                # Reusable status/source components
-│   │       ├── AttentionBadge.tsx
-│   │       ├── DateKindBadge.tsx
-│   │       ├── Disclaimer.tsx
-│   │       ├── InsufficientInfo.tsx
-│   │       ├── SourceLink.tsx
-│   │       └── VerificationChip.tsx
-│   ├── data/                      # Research corpus (source of truth)
-│   │   ├── candidate-updates.json
-│   │   ├── rules.json
-│   │   └── sources.json
-│   ├── domain/                    # Pure business logic — no React, no I/O
-│   │   ├── buildChecklist.ts
-│   │   ├── buildMeetingKit.ts
-│   │   ├── buildPathways.ts
-│   │   ├── buildTimeline.ts
-│   │   ├── dataAdapters.ts        # JSON → typed corpus adapters
-│   │   ├── dataValidation.ts      # Defensive corpus validation
-│   │   ├── dateCalculations.ts    # ISO-8601 date math
-│   │   ├── evaluateRules.ts       # Core deterministic rules engine
-│   │   ├── evaluateRules.test.ts  # Engine tests
-│   │   ├── scenarios.ts           # 4 demo personas
-│   │   └── types.ts               # All domain types
-│   ├── hooks/
-│   │   ├── use-mobile.tsx
-│   │   └── useStayValid.tsx       # In-memory session context
-│   ├── lib/
-│   │   ├── error-capture.ts
-│   │   ├── error-page.ts
-│   │   ├── lovable-error-reporting.ts
-│   │   └── utils.ts               # cn() and helpers
-│   ├── routes/                    # TanStack file-based routes
-│   │   ├── __root.tsx             # Root layout + provider
-│   │   ├── index.tsx              # Home / landing
-│   │   ├── check.tsx              # Questionnaire route
-│   │   ├── plan.tsx               # Results dashboard
-│   │   ├── sources.tsx            # Research transparency page
-│   │   └── privacy.tsx            # Privacy principles
-│   ├── utils/
-│   │   ├── calendarExport.ts      # .ics calendar export
-│   │   ├── dateFormatting.ts      # Display formatting
-│   │   └── print.ts               # Browser print helper
-│   ├── router.tsx                 # TanStack router factory
-│   ├── server.ts                  # SSR error wrapper
-│   ├── start.ts                   # App entry
-│   ├── routeTree.gen.ts           # Auto-generated route tree
-│   └── styles.css                 # Design tokens + Tailwind theme
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md                      # This file
+Optional server-side AI can explain verified results but cannot create or modify
+rules.
+
+That distinction is the whole design:
+
+| | Deterministic engine | Optional AI layer |
+| --- | --- | --- |
+| Decides which rules apply | ✅ | ❌ |
+| Calculates dates and deadlines | ✅ | ❌ |
+| Determines status or eligibility | ❌ *(by design)* | ❌ |
+| Rephrases verified findings | — | ✅ |
+| Runs with no API key | ✅ | n/a |
+| Can be switched off entirely | — | ✅ *(default)* |
+
+With AI disabled — the default — asking a question makes **no network request at
+all**. Classification, retrieval and answer construction all happen in your
+browser. The timeline, checkpoints, pathways, checklist, calendar export and
+meeting kit never involve an AI provider under **any** configuration.
+
+---
+
+## Quick start
+
+```bash
+npm install
 ```
 
----
-
-## 4. Data model
-
-### 4.1 Research corpus (`Corpus`)
-
-Three JSON files are loaded once at startup and treated as read-only:
-
-- **`sources.json`** → `SourceCorpus`
-  - `corpusVersion`, `researchedAsOf`
-  - `sources[]`: official documents (Federal Register, USCIS, DHS, university guidance) with tier, legal status, URL, dates, claims, conflicts.
-
-- **`rules.json`** → `RuleCorpus`
-  - `corpusVersion`, `researchedAsOf`, `ruleSetStatus`
-  - `rules[]`: individual rules with:
-    - `classifications` (e.g. `["F-1"]`)
-    - `activeFrom` / `activeUntil` / `doNotActivateBefore`
-    - `appliesWhen.all/any/not` — named predicate keys
-    - `requiredInputs` — profile fields needed before the rule can run
-    - `calculation` — formula metadata and whether it is a legal deadline
-    - `finding` — attention, headline, explanation, actions, DSO questions
-    - `possiblePathways` — optional next-step topics
-    - `sourceIds` — links back to sources
-    - `legalStatus`, `uncertainty`, `humanReviewRequired`
-
-- **`candidate-updates.json`** → `CandidateCorpus`
-  - `updates[]`: unverified developments (litigation, rulemaking, etc.) that may affect matched rules but **never activate** a rule.
-
-### 4.2 Student profile (`StudentProfile`)
-
-Deliberately minimal and non-identifying. No name, DOB, passport, visa, SEVIS ID, A-number, or receipt number.
-
-| Field | Type | Meaning |
-|-------|------|---------|
-| `classification` | `"F-1"` | Visa classification |
-| `i94Notation` | `"ds" \| "fixed_date" \| "unknown"` | What the I-94 admit-until notation says |
-| `i94AdmitUntilDate` | ISO date \| null | Fixed date printed on I-94 |
-| `mostRecentEntryDate` | ISO date \| null | Last U.S. entry |
-| `presentInUS` | yes/no/unsure | In the U.S. |
-| `maintainingStatus` | yes/no/unsure | Maintaining F-1 status |
-| `i20ProgramStartDate` | ISO date \| null | I-20 program start |
-| `i20ProgramEndDate` | ISO date \| null | I-20 program end |
-| `academicStage` | enum | not_started / in_progress / final_term / completed |
-| `optStage` | enum | none / preparing / applied / post_completion_opt / stem_opt |
-| `eadStartDate` / `eadEndDate` | ISO date \| null | OPT/STEM OPT EAD dates |
-| `dsoOptRecommendationDate` | ISO date \| null | When DSO entered OPT recommendation |
-| `plannedTravel` | boolean | Planning international travel |
-| `plannedDepartureDate` | ISO date \| null | Planned departure |
-| `expectedReentryDate` | ISO date \| null | Expected return |
-| `pendingApplication` | boolean | Any pending EOS/OPT/etc. application |
-| `goals` | `Goal[]` | What the student wants help with |
-
-### 4.3 Engine output (`EvaluationResult`)
-
-```ts
-interface EvaluationResult {
-  asOfDate: string;                 // date the evaluation was run
-  corpusVersion: string;
-  researchedAsOf: string;
-  ruleSetStatus: string;
-  findings: Finding[];              // matched rules with attention + dates
-  insufficient: InsufficientInfoNote[]; // rules blocked by missing inputs
-  relatedCandidateUpdates: CandidateUpdate[]; // watchlist items for matched rules
-  evaluatedRuleIds: string[];
-  skippedRuleIds: string[];
-}
+```bash
+npm run dev
 ```
 
-Derived views:
+Open `http://localhost:8080`. No configuration required.
 
-- `TimelineItem[]` — unified chronological list of dates with status (past/today/future).
-- `PathwayCard[]` — deduplicated next-step topics across findings.
-- `ChecklistAction[]` — sorted actionable items.
-- `MeetingKit` — printable one-page summary for a DSO appointment.
+| Script | Does |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build (Cloudflare Worker via Nitro) |
+| `npm run preview` | Serve the production build |
+| `npm run test` | Vitest, once |
+| `npm run test:watch` | Vitest, watch mode |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint + Prettier |
+| `npm run verify` | typecheck → lint → test → build |
+
+The canonical lockfile is `bun.lock`; `package-lock.json` is gitignored so it
+cannot compete. `.gitattributes` forces LF line endings — without it a Windows
+checkout produces thousands of spurious Prettier errors.
 
 ---
 
-## 5. The rules engine
+## How it works
 
-The engine is in `src/domain/evaluateRules.ts`. It is a **pure function**:
+### The corpus is the source of truth
+
+Three JSON files under `src/data/`, never edited by code:
+
+| File | Role |
+| --- | --- |
+| `sources.json` | Official documents — Federal Register, USCIS, eCFR, DHS, university guidance — with tier, legal status, verified claims, and when each was last checked |
+| `rules.json` | Rules with predicates, date formulas, findings, pathways, and the source IDs backing them |
+| `candidate-updates.json` | Unverified developments (litigation, rulemaking). **Watchlist only — these can never activate a rule.** |
+
+Adapters normalise them once at load. Validation reports whether they are usable
+and never repairs them: when data is unavailable the UI says so rather than
+inventing content.
+
+### The engine is a pure function
 
 ```ts
 evaluateRules(profile, corpus, asOfDate) => EvaluationResult
 ```
 
-### 5.1 Activation model
+The clock is never read inside it — `asOfDate` is captured once per session and
+threaded through. The same profile, corpus and date always produce byte-identical
+output, which is asserted by test.
 
-For each rule the engine performs these checks in order:
+Non-negotiables it enforces:
 
-1. **Classification filter** — skip if the rule's `classifications` do not include the student's classification.
-2. **Active window** — skip if `activeUntil` has passed relative to `asOfDate`.
-3. **Predicates** — evaluate `appliesWhen.all`, `appliesWhen.any`, and `appliesWhen.not` against the profile.
-4. **Required inputs** — if any required profile value is missing/unknown, emit an `InsufficientInfoNote` and skip.
-5. **Gate / legal status** — determine whether the rule is `pendingEffective`:
-   - `doNotActivateBefore` not yet reached
-   - `activeFrom` not yet reached
-   - `legalStatus` is `published_pending_effective`, `proposed`, `delayed`, `stayed`, `enjoined`, `terminated`, `superseded`, or `status_uncertain`
-6. **Date calculation** — only compute deadlines when the rule is in force and `calculation.isLegalDeadline` is true. Otherwise dates become `needs_confirmation`.
+- Only verified rules generate findings; candidate updates never do.
+- Missing information produces an explicit insufficient-information state, never
+  a guess.
+- Publication is not proof a rule is in force — scheduled effective dates are
+  marked *needs confirmation*, not *official*.
+- A rule that is not yet in force can never be shown as "confirm now", and can
+  never emit an official deadline.
+- Visa expiry, I-20 program end, EAD expiry and I-94 admit-until are four
+  different dates and stay four different dates.
 
-### 5.2 Predicates
+### Every date says what kind of date it is
 
-Named predicate keys live in `PREDICATES`. Examples:
+| Badge | Meaning |
+| --- | --- |
+| **Official date** | Stated or computed from a government source that is in force |
+| **From your document** | You typed it off your own paperwork |
+| **Stay Valid reminder** | A preparation prompt — *not* a government deadline |
+| **Needs confirmation** | Depends on a rule not yet in force, or one that is uncertain |
 
-- `studentClassificationIsF1`
-- `i94NotationIsDS`
-- `presentInUSOnEffectiveDate`
-- `programCompleted`
-- `plannedInternationalTravel`
-- `expectedReentryOnOrAfterEffectiveDate`
+This survives into the `.ics` export, so a checkpoint you read months later out
+of context still tells you what it is.
 
-`"unsure"` answers never satisfy a predicate.
+### Your own answer is never treated as a determination
 
-### 5.3 Calculators
+Asked *"has anyone told you there is a problem with your F-1 status?"*, a student
+can honestly answer **"I'm not sure"** — and should be able to.
 
-Each rule with date math has a matching calculator keyed by `rule.id`:
+Earlier, that answer silently removed the most important rule for D/S students:
+no finding, no note, nothing on the page. Silence there reads as *"this does not
+apply to you"*, which is exactly the determination the product forbids itself
+from making.
 
-| Rule ID | What it computes |
-|---------|------------------|
-| `rule-f1-program-end-ds-grace-period` | 60-day grace period after I-20 program end |
-| `rule-f1-transition-existing-ds-student` | D/S transition authorized stay capped at 2030-11-14 |
-| `rule-f1-fixed-admission-after-effective-date` | Fixed-period admit-until basis + 30-day departure window |
-| `rule-f1-opt-filing-window` | 90-day pre-completion / 60-day post-completion I-765 windows |
-| `rule-f1-travel-readmission-fixed-period` | Reentry review marker |
-| `rule-f1-unlawful-presence-fixed-aud` | I-94 admit-until date from student's document |
+Now:
 
-### 5.4 Attention levels
-
-The only status vocabulary in the UI:
-
-| Attention | Meaning | Color token |
-|-----------|---------|-------------|
-| `confirm_now` | Needs immediate verification or action | `--attn-confirm` (red) |
-| `prepare` | Plan ahead | `--attn-prepare` (amber) |
-| `monitor` | Watch for changes | `--attn-monitor` (blue) |
-| `information` | Context / background | `--attn-info` (slate) |
-
-Rules that are pending-effective have their attention downgraded so they can never show `confirm_now`.
+- answer "no problem that I know of" → the rule appears, **labelled as resting on
+  your own answer**, with the caveat that only a DSO can confirm it;
+- any other answer → an explicit *"only your DSO can answer this"* note, so you
+  can see the topic was held back rather than ruled out.
 
 ---
 
-## 6. UI architecture
+## Ask Stay Valid
 
-### 6.1 State management
+A free-text question box on your results page. Type a question in your own
+words — *"how could the September 15 rule affect someone already admitted for
+D/S?"*, *"what should I discuss with my DSO before traveling?"*, *"why is my
+program end date important?"*
 
-`src/hooks/useStayValid.tsx` provides a single React Context:
+The timeline stays the centre of the product. This explains what you have just
+read; it does not replace it.
 
-- `profile` — current answers
-- `asOfDate` — captured once per session
-- `corpus` / `validation` — loaded corpus
-- `evaluation`, `timeline`, `pathways`, `actions`, `meetingKit` — memoized derived values
-- `updateProfile`, `loadScenario`, `clearAll`
+**How a question is handled:**
 
-**Privacy guarantee:** nothing is written to `localStorage`, cookies, or any server. Refreshing the page resets the form.
-
-### 6.2 Routes
-
-| File | URL | Purpose |
-|------|-----|---------|
-| `index.tsx` | `/` | Landing page with scenario cards and how-it-works |
-| `check.tsx` | `/check` | Multi-step intake questionnaire |
-| `plan.tsx` | `/plan` | Results dashboard (timeline, findings, pathways, watchlist, meeting kit) |
-| `sources.tsx` | `/sources` | Full research transparency: sources + candidate updates |
-| `privacy.tsx` | `/privacy` | Privacy-by-design principles |
-
-### 6.3 Key components
-
-- **`IntakeWizard.tsx`** — 4-step form with scenario quick-starts, date validation, and step navigation.
-- **`Field.tsx`** — `DateField`, `RadioGroupField`, `CheckboxGroupField` with accessible labels.
-- **`TimelineView.tsx`** — chronological list with `.ics` export per item.
-- **`FindingCard.tsx`** — expandable rule result with official rationale, actions, DSO questions.
-- **`PathwayList.tsx`** — grouped next-step topics.
-- **`MeetingKitView.tsx`** — print-optimized one-page summary.
-- **`AttentionBadge.tsx` / `DateKindBadge.tsx`** — status indicators.
-- **`Disclaimer.tsx`** — legal disclaimers and educational notice.
-
----
-
-## 7. Design system
-
-Defined in `src/styles.css` using Tailwind v4 `@theme` tokens.
-
-### 7.1 Color tokens
-
-- `--background`: warm paper
-- `--foreground`: midnight ink
-- `--primary`: ink
-- `--accent`: teal
-- `--ink` / `--ink-foreground`: hero/dark sections
-- `--teal` / `--teal-soft`: primary accent
-- `--amber` / `--amber-soft`: reserved for `prepare` attention
-
-### 7.2 Attention tokens
-
-```css
---attn-confirm: oklch(0.5 0.145 22);
---attn-prepare: oklch(0.53 0.115 66);
---attn-monitor: oklch(0.47 0.075 216);
---attn-info:    oklch(0.42 0.028 258);
+```
+1. Classified locally      — some questions get reviewed wording, never a model
+2. Identifiers detected    — a message that looks like it holds one is not sent
+3. Retrieved locally       — verified rules and sources only, capped and ranked
+4. Answered deterministically — quoting the corpus's own approved wording
+5. Optionally rephrased    — only if AI is on, you have agreed, and it can help
 ```
 
-### 7.3 Typography
+Step 4 completes **before** any network call, so every failure path is already
+covered and you are never shown an error instead of an answer.
 
-- Sans: **Source Sans 3**
-- Serif: **Newsreader** (used for headlines)
-- Loaded via `<link>` in `src/routes/__root.tsx`.
+**Questions that never reach a model, in any configuration:**
 
-### 7.4 Shadows
+| You ask | You get |
+| --- | --- |
+| "Am I still in status?" | A refusal to determine status, and a pointer to your DSO |
+| "Should I leave the country?" | A decline to advise, and a pointer to an attorney |
+| "I was detained at the airport" | Immediate escalation to your DSO and an attorney |
+| "How do I get a green card?" | An honest out-of-scope answer |
+| Something the corpus does not cover | An explicit insufficient-evidence answer |
 
-- `--shadow-card`: subtle card shadow
-- `--shadow-lift`: hover/focus lift shadow
+**Also:** free-text input with Enter to send and Shift+Enter for a newline;
+loading, retry and quota-unavailable states; clear-conversation; source cards
+showing legal status and last-checked date; suggested follow-ups drawn from the
+corpus's own DSO questions; an "ask your DSO" escalation on every answer; and a
+standing warning never to type a passport, SEVIS, visa, A-number or receipt
+number. Every answer states its origin — *quoted from verified sources* or
+*explained by AI from verified sources* — so you always know which you have.
 
 ---
 
-## 8. How to run locally
+## Optional AI (off by default)
+
+Provider order: **Gemini → Groq → deterministic.**
+
+Enable it by copying `.env.example` to `.env` (or `.dev.vars` for wrangler) and
+setting `AI_CHAT_ENABLED=true` with at least one key. Both files are gitignored.
+
+For production on Cloudflare:
 
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Start the dev server
-npm run dev
+npx wrangler secret put GEMINI_API_KEY
 ```
 
-The app runs at `http://localhost:8080` by default.
+Full variable reference and deployment steps: [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
-### Available scripts
+### What is sent, and what is not
 
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Development server |
-| `npm run build` | Production build |
-| `npm run build:dev` | Development-mode build |
-| `npm run preview` | Preview production build |
-| `npm run lint` | ESLint |
-| `npm run format` | Prettier |
-| `npx vitest run` | Run tests |
+**Sent:** your question; a few non-identifying profile fields (I-94 notation,
+academic stage, OPT stage, travel planned, and *whether* a program-end or EAD
+date exists — **not the dates**); the small set of matching verified rules with
+dates the engine already calculated; limited source metadata; up to six recent
+messages.
+
+**Never sent:** the full corpus; any candidate update; any identifier; any API
+key. Keys live only on the server — verified against the built output, the client
+bundle contains zero occurrences of either key name, either provider hostname,
+the auth headers, or the system prompt.
+
+### The AI cannot decide anything
+
+Every provider answer is validated *after* it returns, because structured output
+guarantees formatting and not truthfulness. An answer is **discarded** and
+replaced with the plain sourced version if it:
+
+- cites a source ID that was not supplied;
+- states a date that was not in the supplied context (a fabricated deadline);
+- asserts status, eligibility, legality, or a predicted outcome;
+- advises you to leave, stay, or re-enter the United States.
+
+It also cannot lower the "confirm with your DSO" flag, and cannot reclassify its
+way out of a blocked category.
+
+### Quota protection
+
+Capped question length, context, history and output; request timeout; at most one
+retry; exponential backoff with jitter; a circuit breaker; duplicate-submission
+suppression; per-client rate limiting. The fallback provider is used **only** on a
+temporary failure — never on a safety refusal, which would turn it into a way to
+shop for a permissive model. No AI call happens on page load.
 
 ---
 
-## 9. Testing
+## Privacy
 
-Tests live in `src/domain/evaluateRules.test.ts` and run with **Vitest**.
+- No account, no login, no uploads.
+- No name, date of birth, SEVIS ID, passport, visa, A-number or receipt number is
+  ever requested — and the chat refuses to send a message that looks like it
+  contains one.
+- Your evaluation runs in your browser. Nothing is written to `localStorage`,
+  cookies, or a server.
+- "Clear my information" erases your answers **and** the chat conversation
+  immediately. So does closing the tab.
+- With AI enabled, you see a disclosure and must acknowledge it before the first
+  AI-assisted answer. The provider processes that request under its own policy.
+- Stay Valid does not intentionally store conversations, and does not log
+  question text or profile dates.
 
-Coverage includes:
+Full detail on the in-app privacy page and in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-- Determinism: identical inputs → identical output
-- Activation gating: rules not yet in force cannot produce legal deadlines
-- Missing inputs: produce `InsufficientInfoNote`, never a guess
-- Candidate updates: never activate a rule
-- Boundary tests defined in the corpus
-- Date math correctness
+---
+
+## Project layout
+
+```
+src/
+├── data/            research corpus (read-only source of truth)
+├── domain/          pure logic — no React, no I/O, no clock
+│   └── chat/        question normalisation, retrieval, safety, local answers
+├── rpc/             the server-function boundary (client-callable stub)
+├── server/ai/       provider abstraction, prompts, validation (server-only)
+├── components/      intake, results, chat, shared, ui
+├── hooks/           in-memory session and conversation state
+├── routes/          TanStack Start file-based routes
+└── utils/           calendar export, date formatting, print
+docs/
+├── ARCHITECTURE.md    how it fits together
+├── CLAUDE_AUDIT.md    audit findings, bugs fixed, remaining work
+├── POLICY_AUDIT.md    corpus concerns for a qualified reviewer
+└── HANDOFF.md         setup, deployment, next steps
+```
+
+`src/server/**` cannot be imported from client code — the framework's
+import-protection plugin denies it. That is why the server function lives in
+`src/rpc/` and the implementation in `src/server/ai/`.
+
+---
+
+## Stack
+
+React 19 · TypeScript 5.8 (strict) · TanStack Start + Router · Vite · Tailwind
+CSS v4 · Radix UI · Zod · Vitest · Cloudflare Worker via Nitro.
+
+The AI layer added **no new runtime dependencies** — providers are called with
+`fetch`.
+
+---
+
+## Tests
 
 ```bash
-npx vitest run
+npm run test
 ```
 
----
+258 tests across 12 files. Every provider call is mocked; **no test consumes API
+credits.**
 
-## 10. Privacy & data handling
-
-- **No PII collected.** The form explicitly avoids name, DOB, passport, visa foil number, SEVIS ID, A-number, and receipt numbers.
-- **No persistence.** All answers live in React state. Refreshing clears them.
-- **No backend calls.** The corpus is bundled JSON; no network requests are made for evaluation.
-- **No AI at runtime.** Outputs are deterministic rule applications.
-
-See `src/routes/privacy.tsx` for the full privacy statement.
-
----
-
-## 11. How to extend
-
-### Add a new rule
-
-1. Add the rule to `src/data/rules.json`.
-2. If it needs new predicates, add them to `PREDICATES` in `src/domain/evaluateRules.ts`.
-3. If it computes dates, add a calculator to `CALCULATORS` keyed by the new `rule.id`.
-4. Add required-input resolvers to `REQUIRED_INPUT_RESOLVERS` if needed.
-5. Add boundary tests to the rule JSON and/or `evaluateRules.test.ts`.
-
-### Add a new source
-
-1. Add the source to `src/data/sources.json`.
-2. Reference its `id` in the `sourceIds` of relevant rules.
-
-### Add a new page
-
-1. Create a file under `src/routes/`.
-2. Export `Route` using `createFileRoute('/path')`.
-3. Add a `head()` with title, description, og tags.
-4. The route will be picked up automatically by TanStack's file-based router.
-
-### Add a new demo scenario
-
-1. Open `src/domain/scenarios.ts`.
-2. Add a `Scenario` object with `id`, `name`, `summary`, and `profile`.
-3. It will appear on the home page and intake page.
+Coverage includes determinism, activation gating and date boundaries; leap years
+and DST independence; D/S versus fixed-date admission; OPT and STEM OPT; travel;
+candidate updates never activating a rule; retrieval relevance and candidate
+exclusion; every safety category; identifier detection *and* non-detection
+("60 days" and "$350 SEVIS fee" must not trip it); provider timeouts, 429s, 5xx,
+malformed output, invented source IDs and fabricated deadlines; correct and
+incorrect fallback triggers; RFC 5545 calendar correctness; and assertions that
+no answer — deterministic or AI — ever states a legal conclusion.
 
 ---
 
-## 12. Important design decisions
+## Status
 
-1. **JSON is the source of truth.** Adapters normalize the corpus at load time; downstream code never reads raw JSON.
-2. **Pure engine.** `evaluateRules` has no side effects and never reads the clock. This makes it fully testable.
-3. **No rule activation by candidates.** `candidate-updates.json` is only a watchlist; it cannot turn on a rule.
-4. **Pending-effective downgrade.** A rule that is not in force can never be presented as `confirm_now`.
-5. **Status by attention, not colour alone.** Every badge has an icon and a text label.
-6. **In-memory state.** Privacy is the default; persistence is intentionally absent.
+The research corpus is self-declared
+`research_draft_requires_human_review`, and every rule carries
+`humanReviewRequired: true`. The engineering work verifies that the product
+handles the corpus *honestly* — it does not verify that the corpus is *correct*.
 
----
-
-## 13. Legal disclaimer
-
-Stay Valid is an **educational planning tool**, not legal advice. It does not determine immigration status and is not a substitute for a Designated School Official (DSO) or a qualified immigration attorney. Always verify deadlines and requirements with your DSO and official government sources.
+**A qualified immigration professional must review `rules.json` before this is
+presented to students as usable guidance.** Open questions are itemised in
+[`docs/POLICY_AUDIT.md`](docs/POLICY_AUDIT.md).
 
 ---
 
-## 14. License
+## Disclaimer
 
-This project was generated for the Stellic Pathfinders Challenge. You may use, modify, and publish it as your own work.
+Stay Valid is an educational planning tool, not legal advice. It does not
+determine immigration status and is not a substitute for a Designated School
+Official or a qualified immigration attorney. Always verify deadlines and
+requirements with your DSO and the official government sources it links to.

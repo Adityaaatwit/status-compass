@@ -2,13 +2,7 @@ import { AttentionBadge } from "@/components/shared/AttentionBadge";
 import { SourceLinks } from "@/components/shared/SourceLink";
 import type { Corpus, PathwayCard } from "@/domain/types";
 
-export function PathwayList({
-  pathways,
-  corpus,
-}: {
-  pathways: PathwayCard[];
-  corpus: Corpus;
-}) {
+export function PathwayList({ pathways, corpus }: { pathways: PathwayCard[]; corpus: Corpus }) {
   if (pathways.length === 0) return null;
 
   return (

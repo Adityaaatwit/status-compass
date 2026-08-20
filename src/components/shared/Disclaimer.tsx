@@ -6,7 +6,7 @@ export const DISCLAIMER_TEXT =
   "Stay Valid is an educational preparation tool. It does not determine immigration status or provide legal advice. Rules and individual circumstances can change. Verify important decisions with your DSO, an authorized university official, or a qualified immigration attorney, and consult the linked government source.";
 
 export const PRIVACY_TEXT =
-  "No account or document upload is required. Your answers are processed in this browser and can be cleared at any time.";
+  "No account or document upload is required. Your answers are processed in this browser and can be cleared at any time. The only feature that can send anything to a third party is the optional AI in “Ask Stay Valid” — it is off by default, asks before its first use, and is explained in full below.";
 
 export function Disclaimer({ className }: { className?: string }) {
   return (

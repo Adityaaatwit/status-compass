@@ -4,14 +4,8 @@
  * and clearly-labelled Stay Valid preparation reminders.
  */
 
-import { diffInDays, isValidIsoDate } from "./dateCalculations";
-import type {
-  Corpus,
-  DerivedDate,
-  EvaluationResult,
-  StudentProfile,
-  TimelineItem,
-} from "./types";
+import { addDays, diffInDays, isValidIsoDate, minDate } from "./dateCalculations";
+import type { Corpus, DerivedDate, EvaluationResult, StudentProfile, TimelineItem } from "./types";
 
 function documentDates(profile: StudentProfile): DerivedDate[] {
   const items: Array<[string, string, string | null]> = [
@@ -53,24 +47,37 @@ function policyCheckpoints(corpus: Corpus): DerivedDate[] {
       ruleId: null,
       sourceIds: [s.id],
     }))
-    .filter(
-      (item, index, arr) => arr.findIndex((other) => other.date === item.date) === index,
-    );
+    .filter((item, index, arr) => arr.findIndex((other) => other.date === item.date) === index);
 }
 
-function dsoFollowUp(profile: StudentProfile): DerivedDate[] {
-  const anchor = profile.i20ProgramEndDate ?? profile.eadEndDate ?? profile.i94AdmitUntilDate;
+/**
+ * A single preparation reminder placed ahead of the student's earliest key
+ * document date, so it lands while there is still time to act.
+ *
+ * Deliberately offset: an earlier version put the reminder *on* the anchor date,
+ * which both duplicated the document row and suggested the student should see
+ * their DSO the day their I-20 expired.
+ */
+const DSO_REVIEW_LEAD_DAYS = 45;
+
+function dsoFollowUp(profile: StudentProfile, asOfDate: string): DerivedDate[] {
+  // Earliest, not first-non-null — the nearest deadline is the one that binds.
+  const anchor = minDate(profile.i20ProgramEndDate, profile.eadEndDate, profile.i94AdmitUntilDate);
   if (!isValidIsoDate(anchor)) return [];
-  const remind = diffInDays("1970-01-01", anchor) === null ? null : anchor;
-  if (!remind) return [];
+
+  const remind = addDays(anchor, -DSO_REVIEW_LEAD_DAYS);
+  // A reminder in the past helps nobody; fall back to the anchor itself only if
+  // that is still ahead of the student.
+  const date = remind && remind >= asOfDate ? remind : null;
+  if (!date) return [];
+
   return [
     {
       id: "reminder:dso-review",
       label: "Stay Valid reminder: DSO review",
-      date: remind,
+      date,
       kind: "reminder",
-      basis:
-        "Suggested review point tied to your earliest key document date. This is a Stay Valid preparation reminder, not a government deadline.",
+      basis: `Suggested review point ${DSO_REVIEW_LEAD_DAYS} days before your earliest key document date. This is a Stay Valid preparation reminder, not a government deadline.`,
       ruleId: null,
       sourceIds: [],
     },
@@ -97,7 +104,7 @@ export function buildTimeline(
     ...documentDates(profile),
     ...policyCheckpoints(corpus),
     ...ruleDates,
-    ...dsoFollowUp(profile),
+    ...dsoFollowUp(profile, asOfDate),
   ];
 
   // De-duplicate identical label+date pairs, preferring official > document > other.
@@ -117,9 +124,7 @@ export function buildTimeline(
   return [...seen.values()]
     .sort((a, b) => (a.date === b.date ? rank[a.kind] - rank[b.kind] : a.date < b.date ? -1 : 1))
     .map((item) => {
-      const related = evaluation.findings.filter((f) =>
-        f.dates.some((d) => d.id === item.id),
-      );
+      const related = evaluation.findings.filter((f) => f.dates.some((d) => d.id === item.id));
       const days = diffInDays(asOfDate, item.date) ?? 0;
       return {
         ...item,
@@ -129,8 +134,7 @@ export function buildTimeline(
         pathwayIds: related.flatMap((f) => f.pathways.map((p) => p.id)),
         suggestedPreparation: related.flatMap((f) => f.actions).slice(0, 3),
         confirmationNeeded: related.flatMap((f) => f.confirmationNeeded).slice(0, 3),
-        studentEntered:
-          item.kind === "document" ? "You entered this date during intake." : null,
+        studentEntered: item.kind === "document" ? "You entered this date during intake." : null,
       } satisfies TimelineItem;
     });
 }
