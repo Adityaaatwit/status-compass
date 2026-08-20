@@ -56,6 +56,9 @@ export function createGeminiProvider(apiKey: string, model: string): AiChatProvi
               temperature: 0.2,
               maxOutputTokens: input.limits.maxOutputTokens,
               responseMimeType: "application/json",
+              // Keep reasoning minimal: thinking tokens are billed against the
+              // same output budget, and a truncated answer fails validation.
+              thinkingConfig: { thinkingLevel: "low" },
             },
           }),
         });

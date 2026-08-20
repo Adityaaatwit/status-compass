@@ -68,8 +68,8 @@ export const DEFAULT_LIMITS: AiLimits = {
   maxQuestionChars: 1200,
   maxContextChars: 12_000,
   maxHistoryMessages: 6,
-  maxOutputTokens: 600,
-  timeoutMs: 15_000,
+  maxOutputTokens: 1600,
+  timeoutMs: 30_000,
 };
 
 export function readAiConfig(): AiConfig {
@@ -103,7 +103,7 @@ export function readAiConfig(): AiConfig {
         0,
         20,
       ),
-      maxOutputTokens: readInt("AI_MAX_OUTPUT_TOKENS", DEFAULT_LIMITS.maxOutputTokens, 100, 2000),
+      maxOutputTokens: readInt("AI_MAX_OUTPUT_TOKENS", DEFAULT_LIMITS.maxOutputTokens, 100, 4000),
       timeoutMs: readInt("AI_TIMEOUT_MS", DEFAULT_LIMITS.timeoutMs, 1000, 60_000),
     },
   };
