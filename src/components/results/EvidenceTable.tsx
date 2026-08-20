@@ -12,13 +12,7 @@ import { formatDate } from "@/utils/dateFormatting";
  * restyled as stacked cards below `sm` using display utilities on the row
  * elements rather than a duplicated mobile subtree.
  */
-export function EvidenceTable({
-  findings,
-  corpus,
-}: {
-  findings: Finding[];
-  corpus: Corpus;
-}) {
+export function EvidenceTable({ findings, corpus }: { findings: Finding[]; corpus: Corpus }) {
   const ids = [...new Set(findings.flatMap((f) => f.sourceIds))];
   const sources = sourcesByIds(corpus, ids);
   if (sources.length === 0) return null;

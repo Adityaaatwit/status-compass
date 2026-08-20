@@ -125,7 +125,10 @@ function ActionItem({
         <span className="text-sm text-foreground">{action.label}</span>
         <ChevronDown
           aria-hidden="true"
-          className={cn("mt-0.5 ml-auto size-4 shrink-0 text-muted-foreground sv-transition", open && "rotate-180")}
+          className={cn(
+            "mt-0.5 ml-auto size-4 shrink-0 text-muted-foreground sv-transition",
+            open && "rotate-180",
+          )}
         />
       </button>
       {open && (

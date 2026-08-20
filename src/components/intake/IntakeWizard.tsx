@@ -381,9 +381,7 @@ export function IntakeWizard({
 
         {outstanding.length > 0 && (
           <div className="rounded-lg border border-border bg-paper p-3 text-sm">
-            <p className="font-semibold text-foreground">
-              Still needed for the goals you selected
-            </p>
+            <p className="font-semibold text-foreground">Still needed for the goals you selected</p>
             <ul className="mt-1 space-y-1 text-muted-foreground">
               {outstanding.map((q) => (
                 <li key={q.id}>

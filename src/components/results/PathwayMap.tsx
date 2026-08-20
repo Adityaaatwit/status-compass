@@ -20,13 +20,7 @@ function iconFor(title: string) {
   return MessageCircleQuestion;
 }
 
-export function PathwayMap({
-  pathways,
-  corpus,
-}: {
-  pathways: PathwayCard[];
-  corpus: Corpus;
-}) {
+export function PathwayMap({ pathways, corpus }: { pathways: PathwayCard[]; corpus: Corpus }) {
   if (pathways.length === 0) return null;
 
   return (

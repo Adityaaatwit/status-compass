@@ -80,15 +80,7 @@ export function AtAGlance({
   );
 }
 
-function Tile({
-  icon,
-  label,
-  children,
-}: {
-  icon: ReactNode;
-  label: string;
-  children: ReactNode;
-}) {
+function Tile({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
     <article className="sv-card p-4">
       <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
